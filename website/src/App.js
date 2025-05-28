@@ -1,6 +1,3 @@
-// 🌐 AI DAILY CONTENT WEBSITE
-// website/src/App.js
-
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
@@ -16,11 +13,6 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('today');
   const [error, setError] = useState(null);
-
-  // Get base URL for content - use PUBLIC_URL in production, empty in development
-  const getBaseUrl = () => {
-    return process.env.NODE_ENV === 'production' ? process.env.PUBLIC_URL : '';
-  };
 
   // Load today's content
   const loadLatestContent = React.useCallback(async () => {
