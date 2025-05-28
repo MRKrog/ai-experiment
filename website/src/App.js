@@ -17,12 +17,18 @@ function App() {
   const [activeTab, setActiveTab] = useState('today');
   const [error, setError] = useState(null);
 
+  // Get base URL for content - use PUBLIC_URL in production, empty in development
+  const getBaseUrl = () => {
+    return process.env.NODE_ENV === 'production' ? process.env.PUBLIC_URL : '';
+  };
+
   // Load today's content
   const loadLatestContent = React.useCallback(async () => {
     try {
       setLoading(true);
-      // For GitHub Pages, content files are served from the repository base path
-      const response = await fetch('/ai-experiment/content/latest.json');
+      // Get today's date in YYYY-MM-DD format
+      const today = new Date().toISOString().split('T')[0];
+      const response = await fetch(`https://mrkrog.github.io/ai-experiment/content/${today}.json`);
       
       if (!response.ok) {
         throw new Error('Content not found');
@@ -50,27 +56,32 @@ function App() {
 
   // Load recent content history
   const loadRecentHistory = React.useCallback(async () => {
-    // Generate dates for last 7 days
-    const dates = Array.from({length: 7}, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (i + 1));
-      return date.toISOString().split('T')[0];
-    });
+    try {
+      // Get the last 7 days
+      const dates = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        return date.toISOString().split('T')[0];
+      });
 
-    const historyPromises = dates.map(async (date) => {
-      try {
-        const response = await fetch(`/ai-experiment/content/daily/${date}.json`);
-        if (response.ok) {
-          return await response.json();
+      // Try to fetch content for each date
+      const historyPromises = dates.map(async (date) => {
+        try {
+          const response = await fetch(`https://mrkrog.github.io/ai-experiment/content/${date}.json`);
+          if (response.ok) {
+            return await response.json();
+          }
+          return null;
+        } catch {
+          return null;
         }
-        return null;
-      } catch (err) {
-        return null;
-      }
-    });
-    
-    const historyData = await Promise.all(historyPromises);
-    setHistoryContent(historyData.filter(Boolean));
+      });
+
+      const historyData = await Promise.all(historyPromises);
+      setHistoryContent(historyData.filter(Boolean));
+    } catch (err) {
+      console.error('Failed to load history:', err);
+    }
   }, []);
 
   // Load latest content on app start
