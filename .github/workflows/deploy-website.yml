@@ -1,0 +1,79 @@
+# 🌐 WEBSITE DEPLOYMENT WORKFLOW
+# .github/workflows/deploy-website.yml
+
+name: Deploy Website
+
+on:
+  # Deploy when content changes
+  push:
+    paths:
+      - 'content/**'
+      - 'website/**'
+    branches: [ main ]
+  
+  # Allow manual deployment
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. Checkout repository
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    # 2. Setup Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: npm
+        cache-dependency-path: website/package-lock.json
+    
+    # 3. Install dependencies
+    - name: Install dependencies
+      run: |
+        cd website
+        npm ci
+    
+    # 4. Copy content files to public directory
+    - name: Copy content to public
+      run: |
+        mkdir -p website/public/content
+        cp -r content/* website/public/content/
+    
+    # 5. Build the website
+    - name: Build website
+      run: |
+        cd website
+        npm run build
+    
+    # 6. Setup Pages
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+    
+    # 7. Upload artifact
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: website/build
+    
+    # 8. Deploy to GitHub Pages
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
