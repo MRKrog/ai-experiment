@@ -1,4 +1,4 @@
-# AI Daily Website Builder🤖
+# AI Website Builder🤖
 
 An automated system that generates daily inspirational tech-related messages using Claude AI and commits them to your GitHub repository. Perfect for maintaining an active GitHub profile with meaningful, AI-generated content.
 
