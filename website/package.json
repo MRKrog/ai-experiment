@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Website to display AI-generated daily content",
   "private": true,
-  "homepage": "https://github.com/MRKrog/ai-experiment",
+  "homepage": "https://mrkrog.github.io/ai-experiment",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
