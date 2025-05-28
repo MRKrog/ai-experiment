@@ -49,7 +49,7 @@ jobs:
         git config --local user.name "GitHub Action Bot"
         git add -A
         if ! git diff --cached --quiet; then
-          git commit -m "🤖 Daily content generation $(date +'%Y-%m-%d')"
+          git commit -m "🤖 Website content generation $(date +'%Y-%m-%d')"
           git push
         else
           echo "No changes to commit"
