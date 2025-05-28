@@ -1,0 +1,56 @@
+# 🤖 DAILY AI CONTENT GENERATION
+# .github/workflows/daily-content.yml
+
+name: Daily AI Content Generation
+
+on:
+  # Run daily at 10:00 AM UTC (adjust timezone as needed)
+  schedule:
+    - cron: '0 10 * * *'
+  
+  # Allow manual triggering for testing
+  workflow_dispatch:
+
+jobs:
+  generate-content:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. Checkout the repository
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    # 2. Set up Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    # 3. Install dependencies
+    - name: Install Dependencies
+      run: npm install
+    
+    # 4. Run the AI content generation
+    - name: Generate AI Content
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_OWNER: ${{ github.repository_owner }}
+        GITHUB_REPO: ${{ github.event.repository.name }}
+      run: node src/index.js
+    
+    # 5. Optional: Commit and push if there are changes
+    - name: Commit and Push Changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action Bot"
+        git add -A
+        if ! git diff --cached --quiet; then
+          git commit -m "🤖 Daily content generation $(date +'%Y-%m-%d')"
+          git push
+        else
+          echo "No changes to commit"
+        fi
