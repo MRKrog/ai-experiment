@@ -60,12 +60,28 @@ async function commitToGitHub(contentData) {
     const fileContent = JSON.stringify(contentData, null, 2);
     const contentBase64 = Buffer.from(fileContent).toString('base64');
     
+    // Try to get the current file (if it exists)
+    let sha;
+    try {
+      const { data } = await octokit.rest.repos.getContent({
+        owner: CONFIG.owner,
+        repo: CONFIG.repo,
+        path: filePath,
+      });
+      sha = data.sha;
+    } catch (e) {
+      // File doesn't exist yet, which is fine
+      console.log(`Creating new file: ${filePath}`);
+    }
+    
+    // Create or update the file
     await octokit.rest.repos.createOrUpdateFileContents({
       owner: CONFIG.owner,
       repo: CONFIG.repo,
       path: filePath,
       message: `🤖 AI-generated content for ${contentData.date}`,
-      content: contentBase64
+      content: contentBase64,
+      ...(sha && { sha }), // Only include sha if we have it
     });
     
     console.log(`✅ Successfully committed: ${filePath}`);
