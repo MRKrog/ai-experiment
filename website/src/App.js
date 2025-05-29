@@ -18,7 +18,6 @@ function App() {
   const loadLatestContent = React.useCallback(async () => {
     try {
       setLoading(true);
-      // Get today's date in YYYY-MM-DD format
       const today = new Date().toISOString().split('T')[0];
       const response = await fetch(`https://mrkrog.github.io/ai-experiment/content/${today}.json`);
       
@@ -49,14 +48,12 @@ function App() {
   // Load recent content history
   const loadRecentHistory = React.useCallback(async () => {
     try {
-      // Get the last 7 days
       const dates = Array.from({ length: 7 }, (_, i) => {
         const date = new Date();
         date.setDate(date.getDate() - i);
         return date.toISOString().split('T')[0];
       });
 
-      // Try to fetch content for each date
       const historyPromises = dates.map(async (date) => {
         try {
           const response = await fetch(`https://mrkrog.github.io/ai-experiment/content/${date}.json`);
@@ -76,10 +73,20 @@ function App() {
     }
   }, []);
 
-  // Load latest content on app start
+  // Initial load and refresh every minute
   useEffect(() => {
+    // Load content immediately
     loadLatestContent();
     loadRecentHistory();
+
+    // Set up auto-refresh every minute
+    const refreshInterval = setInterval(() => {
+      loadLatestContent();
+      loadRecentHistory();
+    }, 60000); // 60000 ms = 1 minute
+
+    // Cleanup interval on unmount
+    return () => clearInterval(refreshInterval);
   }, [loadLatestContent, loadRecentHistory]);
 
   // Refresh content manually
@@ -105,8 +112,12 @@ function App() {
         <div className="header-content">
           <h1>🤖 AI Daily Content</h1>
           <p>Fresh AI-generated content, delivered daily</p>
-          <button className="refresh-btn" onClick={refreshContent}>
-            🔄 Refresh
+          <button 
+            className="refresh-btn" 
+            onClick={refreshContent}
+            disabled={loading}
+          >
+            {loading ? '🔄 Checking...' : '🔄 Refresh'}
           </button>
         </div>
       </header>
@@ -124,6 +135,7 @@ function App() {
           <DailyContent 
             content={currentContent} 
             onRefresh={refreshContent}
+            loading={loading}
           />
         )}
 
@@ -131,6 +143,7 @@ function App() {
           <ContentHistory 
             historyContent={historyContent}
             onLoadMore={loadRecentHistory}
+            loading={loading}
           />
         )}
 

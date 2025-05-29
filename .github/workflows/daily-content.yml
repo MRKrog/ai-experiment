@@ -4,9 +4,9 @@
 name: Daily AI Content Generation
 
 on:
-  # Run daily at 10:00 AM UTC (adjust timezone as needed)
+  # Run every hour
   schedule:
-    - cron: '0 10 * * *'
+    - cron: '0 * * * *'
   
   # Allow manual triggering for testing
   workflow_dispatch:
@@ -42,15 +42,26 @@ jobs:
         GITHUB_REPO: ${{ github.event.repository.name }}
       run: node src/index.js
     
-    # 5. Optional: Commit and push if there are changes
+    # 5. Commit and push if there are changes
     - name: Commit and Push Changes
+      id: commit
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action Bot"
         git add -A
         if ! git diff --cached --quiet; then
-          git commit -m "🤖 Website content generation $(date +'%Y-%m-%d')"
+          git commit -m "🤖 Website content generation $(date +'%Y-%m-%d-%H')"
           git push
+          echo "changes_made=true" >> $GITHUB_OUTPUT
         else
           echo "No changes to commit"
+          echo "changes_made=false" >> $GITHUB_OUTPUT
         fi
+
+    # 6. Trigger website deployment if content changed
+    - name: Trigger Website Deployment
+      if: steps.commit.outputs.changes_made == 'true'
+      uses: peter-evans/repository-dispatch@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        event-type: trigger-website-deploy

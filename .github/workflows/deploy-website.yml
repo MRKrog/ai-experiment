@@ -11,6 +11,10 @@ on:
       - 'website/**'
     branches: [ main ]
   
+  # Deploy when triggered by content generation
+  repository_dispatch:
+    types: [trigger-website-deploy]
+  
   # Allow manual deployment
   workflow_dispatch:
 
