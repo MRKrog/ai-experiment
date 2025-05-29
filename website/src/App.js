@@ -110,8 +110,7 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div className="header-content">
-          <h1>🤖 AI Daily Content</h1>
-          <p>Fresh AI-generated content, delivered daily</p>
+          <h1>🤖 AI Experiment</h1>
           <button 
             className="refresh-btn" 
             onClick={refreshContent}
@@ -160,11 +159,6 @@ function App() {
           Powered by <strong>Claude AI</strong> • 
           Updated daily via <strong>GitHub Actions</strong> • 
           Built with ❤️ and 🤖
-        </p>
-        <p>
-          <a href="https://github.com/MRKrog/ai-daily-content" target="_blank" rel="noopener noreferrer">
-            View on GitHub
-          </a>
         </p>
       </footer>
     </div>

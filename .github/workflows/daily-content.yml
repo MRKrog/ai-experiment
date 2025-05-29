@@ -4,9 +4,9 @@
 name: Daily AI Content Generation
 
 on:
-  # Run every 5 minutes
+  # Run once per day at 10:00 AM UTC
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '0 10 * * *'
   
   # Allow manual triggering for testing
   workflow_dispatch:
