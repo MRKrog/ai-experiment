@@ -1,0 +1,110 @@
+# 🔄 FREQUENT CONTENT CHECK
+# .github/workflows/frequent-check.yml
+
+name: Frequent Content Check
+
+on:
+  # Run every 5 minutes
+  schedule:
+    - cron: '*/5 * * * *'
+  
+  # Allow manual triggering for testing
+  workflow_dispatch:
+
+jobs:
+  check-content:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. Checkout the repository
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    # 2. Set up Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    # 3. Install dependencies
+    - name: Install Dependencies
+      run: npm install
+    
+    # 4. Run the content check and store result
+    - name: Check Content Status
+      id: check
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_OWNER: ${{ github.repository_owner }}
+        GITHUB_REPO: ${{ github.event.repository.name }}
+      run: |
+        echo "🔍 Checking content status at $(date)"
+        
+        # Run check and capture output
+        OUTPUT=$(node -e "
+        const fs = require('fs');
+        const path = require('path');
+        
+        const today = new Date().toISOString().split('T')[0];
+        const contentPath = path.join('content', today + '.json');
+        
+        let status = 'missing';
+        let timestamp = '';
+        
+        if (fs.existsSync(contentPath)) {
+          const content = JSON.parse(fs.readFileSync(contentPath, 'utf8'));
+          status = 'exists';
+          timestamp = content.timestamp;
+          console.log('✅ Content exists for today:', today);
+          console.log('Last update:', content.timestamp);
+        } else {
+          console.log('❌ No content found for today:', today);
+        }
+        
+        // Output status for GitHub Actions
+        console.log('::set-output name=content_status::' + status);
+        console.log('::set-output name=content_timestamp::' + timestamp);
+        ")
+        
+        echo "$OUTPUT"
+    
+    # 5. Create GitHub issue with status
+    - name: Create Status Issue
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const now = new Date();
+          const timestamp = now.toISOString();
+          const date = timestamp.split('T')[0];
+          const time = timestamp.split('T')[1].split('.')[0];
+          
+          const status = '${{ steps.check.outputs.content_status }}';
+          const contentTimestamp = '${{ steps.check.outputs.content_timestamp }}';
+          
+          const issueTitle = `Content Check Status - ${date} ${time}`;
+          
+          let statusEmoji = status === 'exists' ? '✅' : '❌';
+          let statusMessage = status === 'exists' 
+            ? `Content exists and was last updated at ${contentTimestamp}`
+            : 'No content found for today';
+          
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: issueTitle,
+            body: `
+            # Content Check Report
+            
+            **Time**: ${timestamp}
+            **Status**: ${statusEmoji} ${statusMessage}
+            
+            ## Details
+            - Check performed by: GitHub Actions
+            - Workflow: Frequent Content Check
+            - Run ID: ${context.runId}
+            `,
+            labels: ['status-check', 'automated']
+          }); 
