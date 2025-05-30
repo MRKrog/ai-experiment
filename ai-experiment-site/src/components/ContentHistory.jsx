@@ -1,7 +1,7 @@
 import React from 'react';
 import SuggestionTable from './SuggestionTable';
 
-function ContentHistory({ suggestions, loading, error }) {
+function ContentHistory({ suggestions, loading, error, onDelete, onStartProcess }) {
   return (
     <section>
       <h2 className="text-2xl font-semibold text-gray-100 mb-4">Generation History</h2>
@@ -19,7 +19,12 @@ function ContentHistory({ suggestions, loading, error }) {
             </div>
           </div>
         ) : suggestions.length > 0 || loading ? (
-          <SuggestionTable suggestions={suggestions} isLoading={loading} />
+          <SuggestionTable 
+            suggestions={suggestions} 
+            isLoading={loading}
+            onDelete={onDelete}
+            onStartProcess={onStartProcess}
+          />
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">

@@ -56,6 +56,33 @@ _Content will appear here once generated_
   return data;
 };
 
+export const deleteContentRequest = async (owner, repo, issueNumber) => {
+  try {
+    // First get the issue's node ID using REST API
+    const { data: issue } = await octokit.issues.get({
+      owner,
+      repo,
+      issue_number: issueNumber
+    });
+
+    // Then use GraphQL to delete the issue
+    await octokit.graphql(`
+      mutation DeleteIssue($issueId: ID!) {
+        deleteIssue(input: {issueId: $issueId}) {
+          clientMutationId
+        }
+      }
+    `, {
+      issueId: issue.node_id
+    });
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting issue:', error);
+    throw error;
+  }
+};
+
 // Helper function to determine priority from labels
 const getPriorityFromLabels = (labels) => {
   const priorityLabels = labels.map(label => label.name.toLowerCase());

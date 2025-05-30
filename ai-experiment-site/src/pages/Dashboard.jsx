@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ContentForm from '../components/ContentForm';
 import ContentHistory from '../components/ContentHistory';
 import ContentPreview from '../components/ContentPreview';
-import { fetchGitHubIssues, createContentRequest } from '../utils/githubUtils';
+import { fetchGitHubIssues, createContentRequest, deleteContentRequest } from '../utils/githubUtils';
 
 function Dashboard() {
   const [suggestions, setSuggestions] = useState([]);
@@ -19,7 +19,7 @@ function Dashboard() {
         import.meta.env.VITE_GITHUB_REPO,
         page
       );
-      // console.log('Loaded issues:', newIssues);
+      console.log('Loaded issues:', newIssues);
       
       if (page === 1) {
         setSuggestions(newIssues);
@@ -65,6 +65,48 @@ function Dashboard() {
     }
   };
 
+  const handleDelete = async (issueId) => {
+    try {
+      setLoading(true);
+      await deleteContentRequest(
+        import.meta.env.VITE_GITHUB_OWNER,
+        import.meta.env.VITE_GITHUB_REPO,
+        issueId
+      );
+      await loadGitHubIssues(1); // Reload the list after deletion
+    } catch (err) {
+      setError('Failed to delete content request. Please try again.');
+      console.error('Error deleting request:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartProcess = async (suggestion) => {
+    try {
+      // Here you would typically start your content generation process
+      // For now, we'll just update the status to 'approved'
+      const updatedSuggestion = {
+        ...suggestion,
+        status: 'approved'
+      };
+      
+      // Update the suggestion in the list
+      setSuggestions(prevSuggestions =>
+        prevSuggestions.map(s =>
+          s.id === suggestion.id ? updatedSuggestion : s
+        )
+      );
+
+      // You can add your content generation logic here
+      console.log('Starting content generation for:', suggestion);
+      
+    } catch (err) {
+      setError('Failed to start content generation. Please try again.');
+      console.error('Error starting content generation:', err);
+    }
+  };
+
   return (
     <main className="flex-1 w-full overflow-y-auto">
       <div className="max-w-[1400px] mx-auto px-8 py-8">
@@ -84,6 +126,8 @@ function Dashboard() {
                 error={error}
                 onLoadMore={handleLoadMore}
                 hasMore={hasMore}
+                onDelete={handleDelete}
+                onStartProcess={handleStartProcess}
               />
             </div>
           </div>
