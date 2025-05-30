@@ -1,17 +1,36 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  /* themes: synthwave --default, cyberpunk --prefersdark, dracula, cupcake, bumblebee, emerald, corporate, retro; */
-  themes: cyberpunk;
-  root: ":root";
-  /* include: ".daisyui-components"; */
-  /* exclude: ".no-daisyui"; */
-  /* prefix: "daisy-"; */
-  /* logs: true; */
-  darkTheme: "cyberpunk";
-  /* base: true; */
-  /* utils: true; */
-  /* rtl: false; */
-  /* styled: true; */
+  themes: dark --default --prefersdark;
+}
+@plugin "daisyui/theme" {
+  name: "matrix";
+  default: true;
+  prefersdark: true;
+  color-scheme: dark;
+
+  --color-base-100: oklch(1% 0.02 240);
+  --color-base-200: oklch(0.5% 0.02 240);
+  --color-base-300: oklch(0.2% 0.02 240);
+  --color-base-content: oklch(98% 0.02 240);
+
+  --color-primary: oklch(45% 0.3 140);
+  --color-primary-content: oklch(98% 0.01 140);
+  --color-secondary: oklch(40% 0.25 140);
+  --color-secondary-content: oklch(98% 0.01 140);
+  --color-accent: oklch(35% 0.25 140);
+  --color-accent-content: oklch(98% 0.01 140);
+
+  --color-neutral: oklch(2% 0.05 240);
+  --color-neutral-content: oklch(98% 0.01 240);
+
+  --color-info: oklch(40% 0.2 180);
+  --color-info-content: oklch(98% 0.01 180);
+  --color-success: oklch(35% 0.25 140);
+  --color-success-content: oklch(98% 0.01 140);
+  --color-warning: oklch(50% 0.25 80);
+  --color-warning-content: oklch(15% 0.05 80);
+  --color-error: oklch(35% 0.3 30);
+  --color-error-content: oklch(98% 0.01 30);
 }
 
 #root {
