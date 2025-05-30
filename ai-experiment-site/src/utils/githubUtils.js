@@ -1,47 +1,59 @@
 import { Octokit } from '@octokit/rest';
 
-// Debug log the token (but not the full value for security)
-const token = import.meta.env.VITE_GITHUB_TOKEN;
-console.log('Token exists:', !!token);
-console.log('Token starts with:', token?.substring(0, 4));
-
 const octokit = new Octokit({
-  auth: token
+  auth: import.meta.env.VITE_GITHUB_TOKEN
 });
 
-console.log('octokit', octokit);
-// console.log('import.meta.env.VITE_GITHUB_TOKEN', import.meta.env.VITE_GITHUB_TOKEN);
-
 // Fetch issues from GitHub repository
-export const fetchGitHubIssues = async (owner, repo) => {
+export const fetchGitHubIssues = async (owner, repo, page = 1, per_page = 100) => {
   try {
-    console.log('Fetching issues for:', { owner, repo });
-    const { data } = await octokit.rest.issues.listForRepo({
+    const { data } = await octokit.issues.listForRepo({
       owner,
       repo,
       state: 'all',
-      per_page: 100,
       sort: 'created',
-      direction: 'desc'
+      direction: 'desc',
+      per_page,
+      page
     });
 
-    console.log('Fetched issues count:', data.length);
+    // Transform the GitHub data into our expected format
     return data.map(issue => ({
-      id: issue.id,
+      id: issue.number,
       theme: issue.title,
       description: issue.body,
       priority: getPriorityFromLabels(issue.labels),
       status: getStatusFromState(issue.state, issue.state_reason),
-      createdAt: issue.created_at
+      createdAt: new Date(issue.created_at).toISOString() // Ensure valid date format
     }));
   } catch (error) {
-    console.error('Error details:', {
-      message: error.message,
-      status: error.status,
-      response: error.response?.data
-    });
+    console.error('Error fetching issues:', error);
     return [];
   }
+};
+
+export const createContentRequest = async (owner, repo, request) => {
+  const { data } = await octokit.issues.create({
+    owner,
+    repo,
+    title: request.theme,
+    body: `### Content Request
+${request.description}
+
+### Priority
+${request.priority}
+
+### Status
+- [x] Request Submitted
+- [ ] Processing
+- [ ] Content Generated
+
+### Generated Content
+_Content will appear here once generated_
+`,
+    labels: ['content-request', request.priority]
+  });
+  return data;
 };
 
 // Helper function to determine priority from labels

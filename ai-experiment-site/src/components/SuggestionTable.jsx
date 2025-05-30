@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from 'date-fns';
 
-const SuggestionTable = ({ suggestions }) => {
+const SuggestionTable = ({ suggestions, isLoading = false }) => {
   const getPriorityBadgeClass = (priority) => {
     const classes = {
       low: 'bg-green-900/40 text-green-200',
@@ -19,10 +19,46 @@ const SuggestionTable = ({ suggestions }) => {
     return `px-2.5 py-1 rounded-full text-xs font-medium ${classes[status] || 'bg-gray-700 text-gray-300'}`;
   };
 
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid date';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex-1 p-6 space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="animate-pulse">
+              <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
+              <div className="h-3 bg-gray-700/50 rounded w-1/2"></div>
+            </div>
+          ))}
+        </div>
+        <div className="border-t border-gray-700 bg-gray-800 px-6 py-4">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-400">Loading...</span>
+            <button className="text-blue-400 hover:text-blue-300">
+              Refresh
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto">
-        <table className="min-w-full divide-y divide-gray-700">
+      <div className="flex-1 overflow-auto">
+        <table className="w-full divide-y divide-gray-700">
           <thead className="bg-gray-800 sticky top-0">
             <tr>
               <th scope="col" className="py-4 px-6 text-left text-sm font-medium text-gray-300">Theme</th>
@@ -58,7 +94,7 @@ const SuggestionTable = ({ suggestions }) => {
                   </span>
                 </td>
                 <td className="py-4 px-6 text-sm text-gray-400">
-                  {formatDistanceToNow(new Date(suggestion.createdAt), { addSuffix: true })}
+                  {formatDate(suggestion.createdAt)}
                 </td>
               </tr>
             ))}

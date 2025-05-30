@@ -22,14 +22,14 @@ const SuggestionForm = ({ onSubmit }) => {
     <div className="bg-gray-800 rounded-xl shadow-xl border border-gray-700">
       <div className="p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Theme Input */}
+          {/* Content Request Input */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
-              Theme
+              Content Request
             </label>
             <input
               type="text"
-              placeholder="Enter your theme idea"
+              placeholder="What would you like the AI to generate?"
               className="w-full px-4 py-3 rounded-lg bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400
                 focus:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               value={suggestion.theme}
@@ -38,16 +38,16 @@ const SuggestionForm = ({ onSubmit }) => {
             />
           </div>
 
-          {/* Description Input */}
+          {/* Additional Details Input */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
-              Description
+              Additional Details
             </label>
             <textarea
               className="w-full px-4 py-3 rounded-lg bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400
                 focus:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
                 transition-all min-h-[120px] resize-y"
-              placeholder="Describe your theme idea in detail"
+              placeholder="Add any specific requirements or preferences for the content"
               value={suggestion.description}
               onChange={(e) => setSuggestion({ ...suggestion, description: e.target.value })}
               required
@@ -85,7 +85,7 @@ const SuggestionForm = ({ onSubmit }) => {
                 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
                 focus:ring-offset-gray-800 transition-colors"
             >
-              Submit Suggestion
+              Submit Content Request
             </button>
           </div>
         </form>

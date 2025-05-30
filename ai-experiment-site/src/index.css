@@ -1,5 +1,14 @@
+@import '@fontsource/barlow-condensed/400.css';  /* Regular */
+@import '@fontsource/barlow-condensed/500.css';  /* Medium */
+@import '@fontsource/barlow-condensed/600.css';  /* Semi-bold */
+@import '@fontsource/barlow-condensed/700.css';  /* Bold */
+
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -13,7 +22,39 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Headings specific styling */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Make table headers more distinct */
+th {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Use Inter for form inputs and Barlow for buttons */
+input, textarea {
+  font-family: 'Inter', sans-serif;
+}
+
+/* button {
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.02em;
+} */
+
+/* Table content styling */
+td {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9375rem;
+}
+
+/* Links */
 a {
+  font-family: 'Inter', sans-serif;
   font-weight: 500;
   color: #646cff;
   text-decoration: inherit;
@@ -30,18 +71,12 @@ body {
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
 button {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
-  font-family: inherit;
   background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
@@ -52,6 +87,12 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Status badges and labels */
+.text-sm {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
 }
 
 @media (prefers-color-scheme: light) {
