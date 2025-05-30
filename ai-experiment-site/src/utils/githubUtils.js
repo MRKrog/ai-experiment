@@ -4,6 +4,8 @@ const octokit = new Octokit({
   auth: import.meta.env.VITE_GITHUB_TOKEN
 });
 
+console.log('octokit', octokit);
+console.log('import.meta.env.VITE_GITHUB_TOKEN', import.meta.env.VITE_GITHUB_TOKEN);
 
 // Fetch issues from GitHub repository
 export const fetchGitHubIssues = async (owner, repo) => {
