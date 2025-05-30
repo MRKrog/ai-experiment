@@ -63,6 +63,10 @@ jobs:
     
     # 5. Build the website
     - name: Build website
+      env:
+        VITE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        VITE_GITHUB_OWNER: ${{ github.repository_owner }}
+        VITE_GITHUB_REPO: ${{ github.event.repository.name }}
       run: |
         cd ai-experiment-site
         npm run build
