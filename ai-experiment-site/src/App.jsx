@@ -45,6 +45,7 @@ function App() {
           import.meta.env.VITE_GITHUB_OWNER,
           import.meta.env.VITE_GITHUB_REPO
         );
+        console.log('issues', issues);
         console.log('import.meta.env.VITE_GITHUB_OWNER', import.meta.env.VITE_GITHUB_OWNER);
         console.log('import.meta.env.VITE_GITHUB_REPO', import.meta.env.VITE_GITHUB_REPO);
         setSuggestions(issues);
