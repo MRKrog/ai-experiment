@@ -1,63 +1,57 @@
+import { useState, useEffect } from 'react';
+import SuggestionForm from './components/SuggestionForm';
+import SuggestionTable from './components/SuggestionTable';
+import { loadSuggestions, addSuggestion } from './utils/suggestionUtils';
 import './App.css';
 
 function App() {
+  const [suggestions, setSuggestions] = useState([]);
+
+  useEffect(() => {
+    // Load suggestions from local storage on component mount
+    setSuggestions(loadSuggestions());
+  }, []);
+
+  const handleSubmitSuggestion = (newSuggestion) => {
+    setSuggestions(prevSuggestions => 
+      addSuggestion(prevSuggestions, newSuggestion)
+    );
+  };
 
   return (
     <div className="min-h-screen bg-base-100">
       {/* Navbar */}
       <div className="navbar bg-base-300">
         <div className="flex-1">
-          <a className="btn btn-ghost normal-case text-xl">DaisyUI React</a>
-        </div>
-        
-      </div>
-
-      {/* Hero Section */}
-      <div className="hero min-h-screen bg-base-200">
-        <div className="hero-content text-center">
-          <div className="max-w-md">
-            <h1 className="text-5xl font-bold text-primary">Hello DaisyUI!</h1>
-            <p className="py-6 text-base-content">
-              This is a React app with DaisyUI components and theme switching.
-            </p>
-            <button className="btn btn-primary">Get Started</button>
-            <button className="btn btn-secondary ml-4">Learn More</button>
-          </div>
+          <a className="btn btn-ghost normal-case text-xl">AI Experiment</a>
         </div>
       </div>
 
-      {/* Sample Components */}
+      {/* Main Content */}
       <div className="container mx-auto p-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="card bg-base-100 shadow-xl">
-            <div className="card-body">
-              <h2 className="card-title">Card Title</h2>
-              <p>Sample card component</p>
-              <div className="card-actions justify-end">
-                <button className="btn btn-primary">Action</button>
-              </div>
-            </div>
-          </div>
-          
-          <div className="card bg-base-100 shadow-xl">
-            <div className="card-body">
-              <h2 className="card-title">Another Card</h2>
-              <p>With different content</p>
-              <div className="card-actions justify-end">
-                <button className="btn btn-secondary">Click me</button>
-              </div>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 gap-8">
+          {/* Form Section */}
+          <section>
+            <h2 className="text-2xl font-bold mb-4">Submit a Suggestion</h2>
+            <SuggestionForm onSubmit={handleSubmitSuggestion} />
+          </section>
 
-          <div className="card bg-base-100 shadow-xl">
-            <div className="card-body">
-              <h2 className="card-title">Third Card</h2>
-              <p>More sample content here</p>
-              <div className="card-actions justify-end">
-                <button className="btn btn-accent">Try it</button>
-              </div>
+          {/* Table Section */}
+          <section>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Suggestions</h2>
+              <span className="badge badge-primary badge-lg">
+                {suggestions.length} Total
+              </span>
             </div>
-          </div>
+            {suggestions.length > 0 ? (
+              <SuggestionTable suggestions={suggestions} />
+            ) : (
+              <div className="text-center py-8 bg-base-200 rounded-lg">
+                <p className="text-lg">No suggestions yet. Be the first to submit one!</p>
+              </div>
+            )}
+          </section>
         </div>
       </div>
     </div>
