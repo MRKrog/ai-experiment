@@ -1,7 +1,12 @@
 import { Octokit } from '@octokit/rest';
 
+// Debug log the token (but not the full value for security)
+const token = import.meta.env.VITE_GITHUB_TOKEN;
+console.log('Token exists:', !!token);
+console.log('Token starts with:', token?.substring(0, 4));
+
 const octokit = new Octokit({
-  auth: import.meta.env.VITE_GITHUB_TOKEN
+  auth: token
 });
 
 console.log('octokit', octokit);
@@ -10,6 +15,7 @@ console.log('octokit', octokit);
 // Fetch issues from GitHub repository
 export const fetchGitHubIssues = async (owner, repo) => {
   try {
+    console.log('Fetching issues for:', { owner, repo });
     const { data } = await octokit.rest.issues.listForRepo({
       owner,
       repo,
@@ -19,9 +25,7 @@ export const fetchGitHubIssues = async (owner, repo) => {
       direction: 'desc'
     });
 
-    console.log('data', data);
-
-    // Transform GitHub issues to match our suggestion format
+    console.log('Fetched issues count:', data.length);
     return data.map(issue => ({
       id: issue.id,
       theme: issue.title,
@@ -31,7 +35,11 @@ export const fetchGitHubIssues = async (owner, repo) => {
       createdAt: issue.created_at
     }));
   } catch (error) {
-    console.error('Error fetching GitHub issues:', error);
+    console.error('Error details:', {
+      message: error.message,
+      status: error.status,
+      response: error.response?.data
+    });
     return [];
   }
 };
