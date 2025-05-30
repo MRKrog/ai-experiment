@@ -1,0 +1,22 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  /* themes: synthwave --default, cyberpunk --prefersdark, dracula, cupcake, bumblebee, emerald, corporate, retro; */
+  themes: cyberpunk;
+  root: ":root";
+  /* include: ".daisyui-components"; */
+  /* exclude: ".no-daisyui"; */
+  /* prefix: "daisy-"; */
+  /* logs: true; */
+  darkTheme: "cyberpunk";
+  /* base: true; */
+  /* utils: true; */
+  /* rtl: false; */
+  /* styled: true; */
+}
+
+#root {
+  width: 100%;
+  /* min-height: 100vh; */
+  margin: 0;
+  padding: 0;
+}

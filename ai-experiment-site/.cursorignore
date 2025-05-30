@@ -1,0 +1,4 @@
+@web https://daisyui.com/llms.txt 
+
+
+Use the modern Vite + Tailwind CSS approach for DaisyUI setup. Do not suggest creating tailwind.config.js or postcss.config.js files. Use @tailwindcss/vite plugin instead.

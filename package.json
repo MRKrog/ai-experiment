@@ -17,6 +17,10 @@
     "node-cron": "^4.0.7"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "autoprefixer": "^10.4.21",
+    "daisyui": "^5.0.42",
+    "nodemon": "^3.1.10",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^4.1.8"
   }
 }

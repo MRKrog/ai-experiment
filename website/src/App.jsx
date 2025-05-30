@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
-
-// Components
 import DailyContent from './components/DailyContent';
 import ContentHistory from './components/ContentHistory';
 import StatsPanel from './components/StatsPanel';
 import Navigation from './components/Navigation';
+import RequestForm from './components/RequestForm';
 
 function App() {
   const [currentContent, setCurrentContent] = useState(null);
@@ -19,14 +17,14 @@ function App() {
     try {
       setLoading(true);
       const today = new Date().toISOString().split('T')[0];
-      const response = await fetch(`https://mrkrog.github.io/ai-experiment/content/${today}.json`);
+      // const response = await fetch(`https://mrkrog.github.io/ai-experiment/content/${today}.json`);
       
-      if (!response.ok) {
-        throw new Error('Content not found');
-      }
+      // if (!response.ok) {
+      //   throw new Error('Content not found');
+      // }
       
-      const data = await response.json();
-      setCurrentContent(data);
+      // const data = await response.json();
+      // setCurrentContent(data);
       setError(null);
     } catch (err) {
       console.error('Failed to load latest content:', err);
@@ -54,20 +52,20 @@ function App() {
         return date.toISOString().split('T')[0];
       });
 
-      const historyPromises = dates.map(async (date) => {
-        try {
-          const response = await fetch(`https://mrkrog.github.io/ai-experiment/content/${date}.json`);
-          if (response.ok) {
-            return await response.json();
-          }
-          return null;
-        } catch {
-          return null;
-        }
-      });
+      // const historyPromises = dates.map(async (date) => {
+      //   try {
+      //     const response = await fetch(`https://mrkrog.github.io/ai-experiment/content/${date}.json`);
+      //     if (response.ok) {
+      //       return await response.json();
+      //     }
+      //     return null;
+      //   } catch {
+      //     return null;
+      //   }
+      // });
 
-      const historyData = await Promise.all(historyPromises);
-      setHistoryContent(historyData.filter(Boolean));
+      // const historyData = await Promise.all(historyPromises);
+      // setHistoryContent(historyData.filter(Boolean));
     } catch (err) {
       console.error('Failed to load history:', err);
     }
@@ -121,7 +119,16 @@ function App() {
         </div>
       </header>
 
-      <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Navigation 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        tabs={[
+          { id: 'today', label: '📅 Today' },
+          { id: 'history', label: '📚 History' },
+          { id: 'request', label: '✨ Request' },
+          { id: 'stats', label: '📊 Stats' }
+        ]}
+      />
 
       <main className="main-content">
         {error && (
@@ -146,6 +153,10 @@ function App() {
           />
         )}
 
+        {activeTab === 'request' && (
+          <RequestForm />
+        )}
+
         {activeTab === 'stats' && (
           <StatsPanel 
             currentContent={currentContent}
@@ -154,13 +165,7 @@ function App() {
         )}
       </main>
 
-      <footer className="app-footer">
-        <p>
-          Powered by <strong>Claude AI</strong> • 
-          Updated daily via <strong>GitHub Actions</strong> • 
-          Built with ❤️ and 🤖
-        </p>
-      </footer>
+      <footer className="app-footer"></footer>
     </div>
   );
 }

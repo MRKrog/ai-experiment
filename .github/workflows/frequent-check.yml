@@ -6,7 +6,7 @@ name: Frequent Content Check
 on:
   # Run every 15 minutes
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '*/45 * * * *'
   
   # Allow manual triggering for testing
   workflow_dispatch:

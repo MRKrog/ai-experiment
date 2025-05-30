@@ -8,7 +8,7 @@ on:
   push:
     paths:
       - 'content/**'
-      - 'website/**'
+      - 'ai-experiment-site/**'
     branches: [ main ]
   
   # Deploy when triggered by content generation
@@ -47,24 +47,24 @@ jobs:
       with:
         node-version: '18'
         cache: npm
-        cache-dependency-path: website/package-lock.json
+        cache-dependency-path: ai-experiment-site/package-lock.json
     
     # 3. Install dependencies
     - name: Install dependencies
       run: |
-        cd website
+        cd ai-experiment-site
         npm ci
     
     # 4. Copy content files to public directory
     - name: Copy content to public
       run: |
-        mkdir -p website/public/content
-        cp -r content/* website/public/content/
+        mkdir -p ai-experiment-site/public/content
+        cp -r content/* ai-experiment-site/public/content/
     
     # 5. Build the website
     - name: Build website
       run: |
-        cd website
+        cd ai-experiment-site
         npm run build
     
     # 6. Setup Pages
@@ -75,7 +75,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: website/build
+        path: ai-experiment-site/dist
     
     # 8. Deploy to GitHub Pages
     - name: Deploy to GitHub Pages
