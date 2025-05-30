@@ -4,7 +4,6 @@ import SuggestionTable from './components/SuggestionTable';
 import { fetchGitHubIssues } from './utils/githubUtils';
 import './App.css';
 
-
 // Sample data for initial display
 // const sampleSuggestions = [
 //   {
