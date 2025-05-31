@@ -7,9 +7,9 @@ function ContentDialog({ suggestion, isOpen, onClose, onStartProcess }) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 w-full max-w-2xl mx-4">
         {/* Header */}
-        <div className="border-b border-gray-700 p-6">
-          <div className="flex items-start justify-between">
-            <h2 className="text-xl font-semibold text-gray-100">
+        <div className="border-b border-gray-700 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-3xl font-semibold text-gray-100">
               Generate Content
             </h2>
             <button

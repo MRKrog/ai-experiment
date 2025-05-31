@@ -37,6 +37,7 @@ export const createContentRequest = async (owner, repo, request) => {
     owner,
     repo,
     title: request.theme,
+    labels: ['content-request', request.priority],
     body: `### Content Request
 ${request.description}
 
@@ -50,8 +51,7 @@ ${request.priority}
 
 ### Generated Content
 _Content will appear here once generated_
-`,
-    labels: ['content-request', request.priority]
+`
   });
   return data;
 };
