@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import ContentDialog from './ContentDialog';
 
-const SuggestionTable = ({ suggestions, isLoading = false, onDelete, onStartProcess }) => {
-  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
+const TasksTable = ({ tasks = [], isLoading = false, onDelete, onStartProcess }) => {
+  const [selectedTask, setSelectedTask] = useState(null);
 
   const getStatusBadgeClass = (status) => {
     const classes = {
@@ -37,8 +37,8 @@ const SuggestionTable = ({ suggestions, isLoading = false, onDelete, onStartProc
     }
   };
 
-  const handleRowClick = (suggestion) => {
-    setSelectedSuggestion(suggestion);
+  const handleRowClick = (task) => {
+    setSelectedTask(task);
   };
 
   if (isLoading) {
@@ -79,7 +79,7 @@ const SuggestionTable = ({ suggestions, isLoading = false, onDelete, onStartProc
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700 bg-gray-800/50">
-              {suggestions.map((task) => (
+              {tasks.map((task) => (
                 <tr 
                   key={task._id} 
                   className="hover:bg-gray-700/50 transition-colors cursor-pointer"
@@ -141,7 +141,7 @@ const SuggestionTable = ({ suggestions, isLoading = false, onDelete, onStartProc
         <div className="border-t border-gray-700 bg-gray-800 px-6 py-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-400">
-              Showing {suggestions.length} task{suggestions.length !== 1 ? 's' : ''}
+              Showing {tasks.length} task{tasks.length !== 1 ? 's' : ''}
             </span>
             <button 
               onClick={() => window.location.reload()} 
@@ -154,16 +154,16 @@ const SuggestionTable = ({ suggestions, isLoading = false, onDelete, onStartProc
       </div>
 
       <ContentDialog
-        suggestion={selectedSuggestion}
-        isOpen={selectedSuggestion !== null}
-        onClose={() => setSelectedSuggestion(null)}
+        suggestion={selectedTask}
+        isOpen={selectedTask !== null}
+        onClose={() => setSelectedTask(null)}
         onStartProcess={(task) => {
           onStartProcess?.(task);
-          setSelectedSuggestion(null);
+          setSelectedTask(null);
         }}
       />
     </>
   );
 };
 
-export default SuggestionTable; 
+export default TasksTable; 

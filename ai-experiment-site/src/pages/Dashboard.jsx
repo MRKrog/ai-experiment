@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ContentForm from '../components/ContentForm';
 import ContentHistory from '../components/ContentHistory';
 import ContentPreview from '../components/ContentPreview';
+import ContentTasks from '../components/ContentTasks';
 import { fetchGitHubIssues, createContentRequest, deleteContentRequest } from '../utils/githubUtils';
 
 function Dashboard() {
@@ -10,7 +11,43 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [tasks, setTasks] = useState([]);
 
+  const loadTasks = async () => {
+    try {
+      const response = await fetch(`https://ai-experiment-production.up.railway.app/api/tasks`);
+      // {
+      //   "tasks": [
+      //     {
+      //       "_id": "1748658246044",
+      //       "title": "String ID Test",
+      //       "description": "Testing string ID",
+      //       "status": "pending",
+      //       "type": "code_generation",
+      //       "prompt": "Test prompt",
+      //       "result": null,
+      //       "error": null,
+      //       "createdBy": "test-user",
+      //       "createdAt": "2025-05-31T02:24:06.050Z",
+      //       "updatedAt": "2025-05-31T02:24:06.050Z",
+      //       "__v": 0
+      //     }
+      //   ],
+      //   "totalPages": 1,
+      //   "currentPage": 1,
+      //   "totalTasks": 1
+      // }
+      const data = await response.json();
+      console.log('Loaded tasks:', data);
+      setTasks(data.tasks);
+    } catch (err) {
+      console.error('Failed to load tasks:', err);
+      setError('Failed to load tasks. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const loadGitHubIssues = async (page = 1) => {
     try {
       setLoading(true);
@@ -19,7 +56,7 @@ function Dashboard() {
         import.meta.env.VITE_GITHUB_REPO,
         page
       );
-      console.log('Loaded issues:', newIssues);
+      // console.log('Loaded issues:', newIssues);
       
       if (page === 1) {
         setSuggestions(newIssues);
@@ -40,6 +77,7 @@ function Dashboard() {
 
   useEffect(() => {
     loadGitHubIssues();
+    loadTasks();
   }, []);
 
   const handleLoadMore = () => {
@@ -120,12 +158,20 @@ function Dashboard() {
             
             {/* Right column */}
             <div>
-              <ContentHistory 
+              {/* <ContentHistory 
+                tasks={tasks}
                 suggestions={suggestions}
                 loading={loading}
                 error={error}
                 onLoadMore={handleLoadMore}
                 hasMore={hasMore}
+                onDelete={handleDelete}
+                onStartProcess={handleStartProcess}
+              /> */}
+              <ContentTasks
+                tasks={tasks}
+                loading={loading}
+                error={error}
                 onDelete={handleDelete}
                 onStartProcess={handleStartProcess}
               />
