@@ -11,4 +11,7 @@ restartPolicyType = "ON_FAILURE"
 numReplicas = 1
 
 [service]
-name = "ai-task-api" 
+name = "ai-task-api"
+
+[variables]
+MONGODB_URI = "${{Secrets.MONGODB_URI}}" 
