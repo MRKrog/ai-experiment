@@ -11,6 +11,11 @@ export default defineConfig(({ mode }) => {
     css: {
       devSourcemap: true
     },
+    build: {
+      rollupOptions: {
+        input: 'src/main.tsx'
+      }
+    },
     define: {
       'import.meta.env.VITE_GITHUB_TOKEN': JSON.stringify(env.VITE_GITHUB_TOKEN),
       'import.meta.env.VITE_GITHUB_OWNER': JSON.stringify(env.VITE_GITHUB_OWNER),

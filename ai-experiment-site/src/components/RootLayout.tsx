@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import Navbar from './Navbar';
-import { fetchGitHubIssues } from '../utils/githubUtils';
+import { fetchGitHubIssues } from '../utils/githubUtils.ts';
+import type { GitHubIssueResponse } from '../types/suggestion.types';
 
-function RootLayout() {
-  const [suggestions, setSuggestions] = useState([]);
+const RootLayout: React.FC = () => {
+  const [suggestions, setSuggestions] = useState<GitHubIssueResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,6 +33,6 @@ function RootLayout() {
       <Outlet />
     </div>
   );
-}
+};
 
 export default RootLayout; 

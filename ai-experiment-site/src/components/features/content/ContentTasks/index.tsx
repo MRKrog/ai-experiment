@@ -1,7 +1,29 @@
 import React from 'react';
-import SuggestionTable from './SuggestionTable';
+import TasksTable from '../../tasks/TasksTable';
+import type { DialogSuggestion } from '../../../../types/suggestion.types';
 
-function ContentHistory({ suggestions, loading, error, onDelete, onStartProcess }) {
+interface Task extends DialogSuggestion {
+  _id: string;
+  title: string;
+  type: 'code_generation' | 'image_generation' | 'text_generation';
+  createdAt: string | Date;
+}
+
+interface ContentTasksProps {
+  tasks: Task[];
+  loading?: boolean;
+  error?: string | null;
+  onDelete?: (id: string) => void;
+  onStartProcess?: (task: Task) => void;
+}
+
+export const ContentTasks: React.FC<ContentTasksProps> = ({
+  tasks,
+  loading = false,
+  error,
+  onDelete,
+  onStartProcess
+}) => {
   return (
     <section>
       <h2 className="text-2xl font-semibold text-gray-100 mb-4">Generation History</h2>
@@ -18,9 +40,9 @@ function ContentHistory({ suggestions, loading, error, onDelete, onStartProcess 
               </button>
             </div>
           </div>
-        ) : suggestions.length > 0 || loading ? (
-          <SuggestionTable 
-            suggestions={suggestions} 
+        ) : tasks.length > 0 || loading ? (
+          <TasksTable 
+            tasks={tasks} 
             isLoading={loading}
             onDelete={onDelete}
             onStartProcess={onStartProcess}
@@ -28,7 +50,7 @@ function ContentHistory({ suggestions, loading, error, onDelete, onStartProcess 
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <p className="text-gray-400 mb-2">No issues yet. Be the first to create one!</p>
+              <p className="text-gray-400 mb-2">No tasks yet. Create your first one!</p>
               <button 
                 onClick={() => window.location.reload()} 
                 className="text-sm text-blue-400 hover:text-blue-300"
@@ -41,6 +63,6 @@ function ContentHistory({ suggestions, loading, error, onDelete, onStartProcess 
       </div>
     </section>
   );
-}
+};
 
-export default ContentHistory;
+export default ContentTasks; 
