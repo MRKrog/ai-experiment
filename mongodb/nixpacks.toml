@@ -2,10 +2,10 @@
 nixPkgs = ['nodejs_20']
 
 [phases.install]
-cmds = ['cd mongodb && npm ci']
+cmds = ['npm ci']
 
 [phases.build]
-cmds = ['cd mongodb && npm install']
+cmds = ['npm install']
 
 [start]
-cmd = 'cd mongodb && node src/server.js' 
+cmd = 'node src/server.js'
