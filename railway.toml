@@ -4,7 +4,7 @@ buildCommand = "cd mongodb && npm install"
 
 [deploy]
 startCommand = "cd mongodb && npm start"
-healthcheckPath = "/health"
+healthcheckPath = "/"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
 numReplicas = 1

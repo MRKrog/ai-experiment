@@ -54,11 +54,11 @@ const connectDB = async (retries = 5, timeout = 5000) => {
     try {
       const conn = await mongoose.connect(process.env.MONGODB_URI);
       console.log(`MongoDB Connected: ${conn.connection.host}`);
-      return;
+      return true;
     } catch (error) {
       if (i === retries - 1) {
         console.error('Failed to connect to MongoDB:', error);
-        process.exit(1);
+        return false;
       }
       console.log(`Retrying connection in ${timeout/1000} seconds...`);
       await new Promise(resolve => setTimeout(resolve, timeout));
@@ -69,9 +69,10 @@ const connectDB = async (retries = 5, timeout = 5000) => {
 // Routes
 app.get('/', (req, res) => {
   res.json({
+    status: 'ok',
     message: 'Welcome to the AI Task Generation API',
     version: process.env.npm_package_version || '1.0.0',
-    docs: process.env.API_DOCS_URL || 'https://github.com/yourusername/ai-task-api'
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
 
@@ -113,26 +114,20 @@ app.use((req, res) => {
 // Start server
 const PORT = process.env.PORT || 3000;
 
-// Graceful shutdown
-const gracefulShutdown = () => {
-  console.log('Received shutdown signal. Closing HTTP server...');
-  mongoose.connection.close(false, () => {
-    console.log('MongoDB connection closed.');
-    process.exit(0);
+// Start server only if MongoDB connects successfully
+const startServer = async () => {
+  const isConnected = await connectDB();
+  if (!isConnected) {
+    console.error('Failed to start server due to MongoDB connection issues');
+    process.exit(1);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
   });
 };
 
-process.on('SIGTERM', gracefulShutdown);
-process.on('SIGINT', gracefulShutdown);
-
-connectDB().then(() => {
-  const server = app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-  });
-
-  // Handle unhandled promise rejections
-  process.on('unhandledRejection', (err) => {
-    console.error('Unhandled Promise Rejection:', err);
-    server.close(() => process.exit(1));
-  });
+startServer().catch(err => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
 }); 
