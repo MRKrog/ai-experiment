@@ -1,12 +1,12 @@
 import React from 'react';
 import './App.css';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createHashRouter, RouterProvider } from 'react-router-dom';
 import RootLayout from './components/RootLayout.tsx';
 import Dashboard from './pages/Dashboard';
 import ContentPage from './pages/ContentPage';
 import ErrorBoundary from './components/ErrorBoundary';
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: '/',
     element: <RootLayout />,
@@ -22,9 +22,7 @@ const router = createBrowserRouter([
       },
     ],
   },
-], {
-  basename: '/ai-experiment/'
-});
+]);
 
 const App: React.FC = () => {
   console.log('App component rendering');
