@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import RootLayout from './components/RootLayout.tsx';
 import Dashboard from './pages/Dashboard';
 import ContentPage from './pages/ContentPage';
@@ -13,7 +13,6 @@ const App: React.FC = () => {
         <Route path="/" element={<RootLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="content" element={<ContentPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
     </BrowserRouter>

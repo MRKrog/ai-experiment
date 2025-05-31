@@ -5,6 +5,7 @@ import { fetchGitHubIssues } from '../utils/githubUtils.ts';
 import type { GitHubIssueResponse } from '../types/suggestion.types';
 
 const RootLayout: React.FC = () => {
+  console.log("Here Rootlayou")
   const [suggestions, setSuggestions] = useState<GitHubIssueResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
