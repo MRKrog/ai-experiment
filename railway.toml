@@ -14,4 +14,4 @@ numReplicas = 1
 name = "ai-task-api"
 
 [env]
-MONGODB_URI = "mongodb+srv://mrkrog:Krog1234@cluster0.iqxvxvz.mongodb.net/ai-task-api?retryWrites=true&w=majority" 
+MONGODB_URI = "${MONGODB_URI}" 
