@@ -15,7 +15,7 @@ export const ContentForm: React.FC<ContentFormProps> = ({
 }) => {
   return (
     <section className="w-full">
-      <h2 className="text-2xl font-semibold text-gray-100 mb-4">Generate New Content</h2>
+      <h2 className="text-2xl mb-4">Generate New Content</h2>
       <div>
         <TaskFormAdapter 
           onSubmit={onSubmit} 

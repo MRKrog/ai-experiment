@@ -9,7 +9,7 @@ function Navbar({ suggestionsCount, loading }) {
       <div className="max-w-[1400px] mx-auto px-8 w-full">
         <div className="flex justify-between h-16 items-center py-5">
           <div className="flex-1">
-            <Link to="/" className="text-4xl font-semibold text-white hover:text-gray-200">
+            <Link to="/" className="text-4xl font-semibold text-white hover:text-gray-200 font-['Barlow_Condensed']">
               AI Content Generator
             </Link>
           </div>
@@ -23,7 +23,7 @@ function Navbar({ suggestionsCount, loading }) {
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                Dashboard
+                Generate Content
               </Link>
               <Link 
                 to="/content" 
