@@ -13,5 +13,5 @@ numReplicas = 1
 [service]
 name = "ai-task-api"
 
-[variables]
+[env]
 MONGODB_URI = "${MONGODB_URI}" 
