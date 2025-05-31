@@ -1,6 +1,7 @@
 [build]
 builder = "nixpacks"
 buildCommand = "cd mongodb && npm install"
+nodeVersion = "20"
 
 [deploy]
 startCommand = "cd mongodb && npm start"

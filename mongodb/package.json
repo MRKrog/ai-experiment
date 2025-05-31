@@ -14,7 +14,7 @@
   "license": "ISC",
   "description": "API for managing AI generation tasks",
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "dependencies": {
     "cors": "^2.8.5",
