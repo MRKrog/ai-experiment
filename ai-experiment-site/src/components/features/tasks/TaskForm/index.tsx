@@ -155,7 +155,7 @@ export const TasksForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
         <Form onSubmit={handleSubmit}>
           {/* Enhancement Category */}
           <FormGroup>
-            <FormLabel>
+            <FormLabel className="mb-2">
               {task.category === 'component_creation' ? 'Component Type' : 'Enhancement Category'}
             </FormLabel>
             <div className="grid grid-cols-4 gap-3">
@@ -165,6 +165,7 @@ export const TasksForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
                   type="button"
                   variant={task.category === key ? 'primary' : 'outline'}
                   onClick={() => setTask({ ...task, category: key, scenario: '' })}
+                  className={task.category === key ? 'bg-blue-600 font-semibold shadow-[0_0_15px_-3px_rgba(59,130,246,0.9)]' : ''}
                 >
                   {category.title}
                 </Button>
@@ -175,7 +176,7 @@ export const TasksForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
           {/* Specific Scenario */}
           {task.category && (
             <FormGroup>
-              <FormLabel>
+              <FormLabel className="mb-2">
                 {task.category === 'component_creation' ? 'Component Style' : 'Specific Scenario'}
               </FormLabel>
               <div className="grid grid-cols-1 gap-2">
@@ -223,7 +224,7 @@ export const TasksForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
             <FormGroup>
               <FormLabel>Additional Notes (Optional)</FormLabel>
               <FormTextarea
-                rows={4}
+                rows={1}
                 placeholder="Add any specific requirements or notes..."
                 value={task.additionalNotes}
                 onChange={(e) => setTask({ ...task, additionalNotes: e.target.value })}
@@ -232,7 +233,7 @@ export const TasksForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
           )}
 
           {/* Submit Button */}
-          {task.scenario && task.component && (
+          {task.scenario && (
             <Button
               type="submit"
               variant="primary"

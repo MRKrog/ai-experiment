@@ -10,7 +10,7 @@ router.get('/', async (req, res, next) => {
       status,
       type,
       page = 1,
-      limit = 10,
+      limit = 100,
       createdBy
     } = req.query;
 

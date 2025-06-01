@@ -35,9 +35,12 @@ const Dashboard: React.FC = () => {
   const loadTasks = async () => {
     try {
       const response = await fetch(`https://ai-experiment-production.up.railway.app/api/tasks`);
+      if (!response.ok) {
+        throw new Error('Failed to load tasks');
+      }
       const data = await response.json();
-      console.log('Loaded tasks:', data);
-      setTasks(data.tasks);
+      setTasks(data.tasks || []);
+      setError(null);
     } catch (err) {
       console.error('Failed to load tasks:', err);
       setError('Failed to load tasks. Please try again later.');
@@ -88,6 +91,7 @@ const Dashboard: React.FC = () => {
   const handleSubmitSuggestion = async (formData: ContentFormData) => {
     try {
       setLoading(true);
+      
       const newSuggestion: DialogSuggestion = {
         ...formData,
         _id: new Date().getTime().toString(),
@@ -107,20 +111,50 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleDelete = async (issueId: string) => {
+  const handleTaskSubmission = async (formData: ContentFormData) => {
     try {
       setLoading(true);
-      await deleteContentRequest(
-        import.meta.env.VITE_GITHUB_OWNER,
-        import.meta.env.VITE_GITHUB_REPO,
-        issueId
-      );
-      await loadGitHubIssues(1);
+      
+      const taskData = {
+        ...formData,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        createdBy: 'system'
+      };
+
+      const response = await fetch('https://ai-experiment-production.up.railway.app/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(taskData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Failed to create task');
+      }
+
+      const newTask = await response.json();
+      setTasks(prevTasks => [newTask, ...prevTasks]);
+      setError(null);
     } catch (err) {
-      setError('Failed to delete content request. Please try again.');
-      console.error('Error deleting request:', err);
+      setError('Failed to create task. Please try again.');
+      console.error('Error creating task:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (taskId: string) => {
+    try {
+      // Optimistically update UI
+      setTasks(prevTasks => prevTasks.filter(task => task._id !== taskId));
+      setError(null);
+    } catch (err) {
+      console.error('Error handling task deletion:', err);
+      // If there was an error, reload the tasks to ensure sync
+      loadTasks();
     }
   };
 
@@ -153,7 +187,7 @@ const Dashboard: React.FC = () => {
 
             {/* Left column */}
             <div>
-              <ContentForm onSubmit={handleSubmitSuggestion} />
+              <ContentForm onSubmit={handleTaskSubmission} />
             </div>
             
             {/* Right column */}
