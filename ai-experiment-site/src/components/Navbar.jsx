@@ -23,7 +23,7 @@ function Navbar({ suggestionsCount, loading }) {
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                Generate Content
+                Generate
               </Link>
               <Link 
                 to="/content" 
@@ -37,7 +37,7 @@ function Navbar({ suggestionsCount, loading }) {
               </Link>
             </nav>
             <span className="bg-blue-900/50 text-blue-200 px-3 py-1 rounded-full text-sm font-medium">
-              {suggestionsCount} Requests
+              {suggestionsCount} Issues
             </span>
             {loading && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-700/50 text-gray-200">

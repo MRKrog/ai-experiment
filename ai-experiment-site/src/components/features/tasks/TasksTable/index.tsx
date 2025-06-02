@@ -2,14 +2,8 @@ import React, { useState, useRef } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ContentDialog } from '../../content/ContentDialog';
 import { Tooltip } from '../../../common/Tooltip';
-import type { DialogSuggestion } from '../../../../types/suggestion.types';
-
-interface Task extends DialogSuggestion {
-  _id: string;
-  title: string;
-  type: 'code_generation' | 'image_generation' | 'text_generation';
-  createdAt: string | Date;
-}
+import type { Task } from '../../../../types/task.types';
+import { TrashIcon } from '@heroicons/react/24/outline';
 
 interface TasksTableProps {
   tasks?: Task[];
@@ -19,7 +13,7 @@ interface TasksTableProps {
 }
 
 const TasksTable: React.FC<TasksTableProps> = ({ tasks = [], isLoading = false, onDelete, onStartProcess }) => {
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const getStatusBadgeClass = (status: string) => {
     const classes = {
@@ -54,23 +48,7 @@ const TasksTable: React.FC<TasksTableProps> = ({ tasks = [], isLoading = false, 
   };
 
   const handleRowClick = (task: Task) => {
-    setSelectedTask(task);
-  };
-
-  const handleDelete = async (taskId: string) => {
-    try {
-      const response = await fetch(`https://ai-experiment-production.up.railway.app/api/tasks/${taskId}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete task');
-      }
-
-      onDelete?.(taskId);
-    } catch (error) {
-      console.error('Error deleting task:', error);
-    }
+    setSelectedTaskId(task._id);
   };
 
   const TruncatedTitle: React.FC<{ title: string }> = ({ title }) => {
@@ -159,25 +137,12 @@ const TasksTable: React.FC<TasksTableProps> = ({ tasks = [], isLoading = false, 
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(task._id);
+                        onDelete(task._id);
                       }}
                       className="p-2 text-red-400 hover:text-red-300 transition-colors rounded-full hover:bg-red-400/10"
+                      title="Delete task"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        className="w-4 h-4"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                      <span className="sr-only">Delete</span>
+                      <TrashIcon className="h-4 w-4" />
                     </button>
                   )}
                 </div>
@@ -187,14 +152,14 @@ const TasksTable: React.FC<TasksTableProps> = ({ tasks = [], isLoading = false, 
         </div>
       </div>
 
-      {selectedTask && (
+      {selectedTaskId && (
         <ContentDialog
-          suggestion={selectedTask}
+          taskId={selectedTaskId}
           isOpen={true}
-          onClose={() => setSelectedTask(null)}
+          onClose={() => setSelectedTaskId(null)}
           onStartProcess={(task) => {
-            onStartProcess?.(task as Task);
-            setSelectedTask(null);
+            onStartProcess?.(task);
+            setSelectedTaskId(null);
           }}
         />
       )}

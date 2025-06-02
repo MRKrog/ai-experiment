@@ -5,7 +5,7 @@ import type {
   TaskFormProps, 
   TaskFormState, 
   ContentScenarios,
-  TaskSubmissionData
+  TaskFormData
 } from '../../../../types/task.types';
 
 const CONTENT_SCENARIOS: ContentScenarios = {
@@ -122,15 +122,16 @@ export const TasksForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
 
     const isNewComponent = task.category === 'component_creation';
     
-    const submissionData: TaskSubmissionData = {
-      _id: new Date().getTime().toString(),
+    const submissionData: TaskFormData = {
       title: isNewComponent 
         ? `Create New ${task.component}`
         : `${selectedOption.label} - ${task.component}`,
       description: selectedOption.description,
       type: task.type,
-      prompt: `${selectedOption.defaultPrompt}${isNewComponent ? '' : ` for ${task.component}`}.${task.additionalNotes ? '\nAdditional requirements: ' + task.additionalNotes : ''}`,
       status: 'pending',
+      theme: task.component,
+      priority: 'medium',
+      prompt: `${selectedOption.defaultPrompt}${isNewComponent ? '' : ` for ${task.component}`}.${task.additionalNotes ? '\nAdditional requirements: ' + task.additionalNotes : ''}`,
       metadata: {
         category: task.category,
         scenario: task.scenario,

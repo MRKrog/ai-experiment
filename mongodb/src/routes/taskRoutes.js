@@ -40,6 +40,7 @@ router.get('/', async (req, res, next) => {
 
 // Create a new task
 router.post('/', async (req, res, next) => {
+  
   try {
     const task = await Task.create({
       ...req.body,

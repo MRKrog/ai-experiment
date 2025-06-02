@@ -114,7 +114,7 @@ export const SuggestionTable: React.FC<SuggestionTableProps> = ({
         </table>
       </div>
 
-      {selectedSuggestion && (
+      {/* {selectedSuggestion && (
         <ContentDialog
           suggestion={selectedSuggestion}
           isOpen={true}
@@ -124,7 +124,7 @@ export const SuggestionTable: React.FC<SuggestionTableProps> = ({
             setSelectedSuggestion(null);
           }}
         />
-      )}
+      )} */}
     </>
   );
 };

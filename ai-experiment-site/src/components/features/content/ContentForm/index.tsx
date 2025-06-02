@@ -1,10 +1,10 @@
 import React from 'react';
-import type { ContentFormData } from '../../../../types/suggestion.types';
+import type { TaskFormData } from '../../../../types/task.types';
 import { TaskFormAdapter } from './TaskFormAdapter';
 
 interface ContentFormProps {
-  onSubmit: (data: ContentFormData) => void;
-  initialData?: Partial<ContentFormData>;
+  onSubmit: (data: TaskFormData) => void;
+  initialData?: Partial<TaskFormData>;
   isLoading?: boolean;
 }
 

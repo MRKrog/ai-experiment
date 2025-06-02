@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
+import ContentNavbar from './ContentNavbar';
 import { fetchGitHubIssues } from '../utils/githubUtils.ts';
 import type { GitHubIssueResponse } from '../types/suggestion.types';
 
 const RootLayout: React.FC = () => {
-  console.log("Here Rootlayou")
   const [suggestions, setSuggestions] = useState<GitHubIssueResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
     const loadGitHubIssues = async () => {
@@ -28,9 +29,19 @@ const RootLayout: React.FC = () => {
     loadGitHubIssues();
   }, []);
 
+  const renderNavbar = () => {
+    if (location.pathname === '/content') {
+      // Return a different navbar for content page
+      return <ContentNavbar />; // You'll need to create this component
+    }
+    
+    // Default navbar for other routes
+    return <Navbar suggestionsCount={suggestions.length} loading={loading} />;
+  };
+
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-gray-900">
-      <Navbar suggestionsCount={suggestions.length} loading={loading} />
+    <div className="flex flex-col h-screen overflow-hidden">
+      {renderNavbar()}
       <Outlet />
     </div>
   );

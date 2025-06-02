@@ -3,7 +3,7 @@ import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import RootLayout from './components/RootLayout.tsx';
 import Dashboard from './pages/Dashboard';
-import ContentPage from './pages/ContentPage';
+import GenerationPage from './pages/GenerationPage';
 import ErrorBoundary from './components/ErrorBoundary';
 
 const App: React.FC = () => {
@@ -12,7 +12,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<RootLayout />}>
           <Route index element={<Dashboard />} />
-          <Route path="content" element={<ContentPage />} />
+          <Route path="content" element={<GenerationPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

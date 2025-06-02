@@ -1,13 +1,6 @@
 import React from 'react';
 import TasksTable from '../../tasks/TasksTable';
-import type { DialogSuggestion } from '../../../../types/suggestion.types';
-
-interface Task extends DialogSuggestion {
-  _id: string;
-  title: string;
-  type: 'code_generation' | 'image_generation' | 'text_generation';
-  createdAt: string | Date;
-}
+import type { Task } from '../../../../types/task.types';
 
 interface ContentTasksProps {
   tasks: Task[];
