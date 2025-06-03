@@ -40,12 +40,17 @@ export async function processTaskWithClaude(task) {
     });
     
     // 3. Extract the generated content
-    const generatedContent = response.content[0].text;
-    console.log(`✅ Claude generated ${generatedContent.length} characters`);
+    const rawContent = response.content[0].text;
+    console.log(`📝 Raw Claude response: ${rawContent.length} characters`);
     
-    // 4. Return structured result
+    // 4. Extract only the React component code from the response
+    const extractedCode = extractReactComponentCode(rawContent);
+    console.log(`✅ Extracted component code: ${extractedCode.length} characters`);
+    
+    // 5. Return structured result
     return {
-      content: generatedContent,
+      content: extractedCode,
+      rawResponse: rawContent, // Keep the full response for debugging
       model: modelAI,
       tokensUsed: response.usage?.output_tokens || 0,
       inputTokens: response.usage?.input_tokens || 0,
@@ -69,25 +74,123 @@ export async function processTaskWithClaude(task) {
   }
 }
 
+// ===== CODE EXTRACTION FUNCTION =====
+function extractReactComponentCode(rawResponse) {
+  try {
+    // Look for TypeScript/TSX code blocks first
+    const tsxMatches = rawResponse.match(/```(?:typescript|tsx|ts)\n([\s\S]*?)```/g);
+    if (tsxMatches && tsxMatches.length > 0) {
+      // Get the first (usually main) TypeScript code block
+      let code = tsxMatches[0]
+        .replace(/```(?:typescript|tsx|ts)\n/, '')
+        .replace(/```$/, '')
+        .trim();
+      
+      console.log('📦 Found TypeScript code block');
+      return cleanupComponentCode(code);
+    }
+    
+    // Fallback: Look for any code blocks
+    const codeMatches = rawResponse.match(/```\w*\n([\s\S]*?)```/g);
+    if (codeMatches && codeMatches.length > 0) {
+      let code = codeMatches[0]
+        .replace(/```\w*\n/, '')
+        .replace(/```$/, '')
+        .trim();
+      
+      console.log('📦 Found generic code block');
+      return cleanupComponentCode(code);
+    }
+    
+    // Last resort: Look for React component patterns in the raw text
+    const reactMatches = rawResponse.match(/(?:import\s+React|const\s+\w+.*?:\s*React\.FC|function\s+\w+.*?\{)[\s\S]*?(?:export\s+default\s+\w+|}\s*;?\s*$)/);
+    if (reactMatches) {
+      console.log('📦 Found React component pattern in raw text');
+      return cleanupComponentCode(reactMatches[0]);
+    }
+    
+    // If no code blocks found, return a basic component template
+    console.warn('⚠️ No code blocks found, generating basic component');
+    return generateBasicComponent(rawResponse);
+    
+  } catch (error) {
+    console.error('❌ Error extracting code:', error);
+    return generateBasicComponent(rawResponse);
+  }
+}
+
+// ===== CODE CLEANUP FUNCTION =====
+function cleanupComponentCode(code) {
+  // Remove any comments about usage or explanations at the top
+  code = code.replace(/^\/\*[\s\S]*?\*\/\s*/, '');
+  code = code.replace(/^\/\/.*\n/gm, '');
+  
+  // Ensure proper imports
+  if (!code.includes('import React')) {
+    code = "import React from 'react';\n\n" + code;
+  }
+  
+  // Ensure proper export
+  if (!code.includes('export default') && !code.includes('export {')) {
+    // Try to find the component name and add export
+    const componentMatch = code.match(/(?:const|function)\s+(\w+)/);
+    if (componentMatch) {
+      code += `\n\nexport default ${componentMatch[1]};`;
+    }
+  }
+  
+  return code.trim();
+}
+
+// ===== FALLBACK COMPONENT GENERATOR =====
+function generateBasicComponent(description) {
+  const componentName = 'GeneratedComponent';
+  return `import React from 'react';
+
+interface ${componentName}Props {
+  className?: string;
+}
+
+const ${componentName}: React.FC<${componentName}Props> = ({ className = '' }) => {
+  return (
+    <div className={\`p-4 border rounded-lg \${className}\`}>
+      <h3 className="text-lg font-semibold mb-2">Generated Component</h3>
+      <p className="text-gray-600">
+        ${description.substring(0, 200).replace(/"/g, "'")}...
+      </p>
+    </div>
+  );
+};
+
+export default ${componentName};`;
+}
+
 // ===== PROMPT BUILDER FUNCTION =====
 function buildPromptForTask(task) {
-  // Different prompt templates based on task type
-  const promptTemplates = {
-    
-    code_generation: `You are an expert software developer. Create high-quality code based on this request:
+  // For code generation tasks, use a specific React component prompt
+  if (task.type === 'code_generation') {
+    return `You are an expert React/TypeScript developer. Create a single, complete React component based on this request:
 
 **Title:** ${task.title}
 **Description:** ${task.description}
 **Requirements:** ${task.prompt}
 
-Please provide:
-1. Clean, well-commented code
-2. Proper imports and exports if applicable
-3. Following best practices for the technology stack
-4. Include any necessary dependencies or setup instructions
+IMPORTANT INSTRUCTIONS:
+- Provide ONLY the React component code in a single TypeScript code block
+- Use React functional components with TypeScript
+- Include proper imports (React, any needed libraries)
+- Include proper export default statement
+- Use Tailwind CSS for styling
+- Make the component self-contained and reusable
+- Do NOT include explanations, usage examples, or multiple code blocks
+- Do NOT include installation instructions or additional files
 
-Generate production-ready code that solves the specified requirements.`,
+Return ONLY the component code that can be directly saved as a .tsx file.`;
+  }
 
+  // Different prompt templates based on task type
+  const promptTemplates = {
+    
     text_generation: `You are a skilled content writer. Create engaging, high-quality content based on this request:
 
 **Title:** ${task.title}
