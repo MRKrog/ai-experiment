@@ -246,7 +246,19 @@ ${exports}
   static generateSampleProps(componentName, task) {
     const name = componentName.toLowerCase();
     
-    if (name.includes('header')) {
+    // For now, use generic props that work with most components
+    // TODO: Parse the component file to extract actual prop types
+    
+    if (name.includes('dropdown')) {
+      return ` 
+        title="Sample Dropdown">
+        <div className="p-2">
+          <div className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Option 1</div>
+          <div className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Option 2</div>
+          <div className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Option 3</div>
+        </div>
+      </${componentName}`;
+    } else if (name.includes('header')) {
       return ` 
         title="Auto-Generated Header!" 
         subtitle="${task.description}"`;
@@ -263,7 +275,10 @@ ${exports}
         <p>This is auto-generated content!</p>
       </${componentName}`;
     } else {
-      return ` title="${task.title}"`;
+      // Generic fallback - try to use common prop patterns
+      return ` title="${task.title}">
+        <div>Sample content for ${task.title}</div>
+      </${componentName}`;
     }
   }
 
