@@ -3,6 +3,7 @@ import Task from '../models/Task.js';
 import { processTaskWithClaude } from '../services/claudeService.js';
 import { getMockComponent, createMockGeneratedContent } from '../services/mockComponentData.js';
 import { FileSystemService } from '../services/fileSystemService.js';
+import { GitHubApiService } from '../services/githubApiService.js';
 
 const router = express.Router();
 
@@ -134,8 +135,14 @@ router.post('/:id/process', async (req, res, next) => {
   console.log(`🎯 Processing single task: ${taskId}`);
   
   try {
-    // 1. Validate React project (on first run)
-    if (process.env.ENABLE_AUTO_DEPLOYMENT === 'true') {
+    // Determine deployment method based on environment
+    const useGitHubApi = process.env.ENABLE_PRODUCTION_DEPLOY === 'true';
+    const useLocalDeploy = process.env.ENABLE_AUTO_DEPLOYMENT === 'true' && !useGitHubApi;
+    
+    console.log(`🔧 Deployment mode: ${useGitHubApi ? 'GitHub API' : useLocalDeploy ? 'Local Files' : 'None'}`);
+
+    // 1. Validate React project (on first run for local deployment only)
+    if (useLocalDeploy) {
       try {
         await FileSystemService.validateReactProject();
       } catch (validationError) {
@@ -146,22 +153,12 @@ router.post('/:id/process', async (req, res, next) => {
 
     // 2. Get the specific task
     const task = await Task.findById(taskId);
-    // console.log('task', task)
     if (!task) {
       return res.status(404).json({
         success: false,
         error: 'Task not found'
       });
     }
-    
-    // 3. Check if task is processable
-    // if (task.status !== 'pending') {
-    //   return res.status(400).json({
-    //     success: false,
-    //     error: `Task is already ${task.status}. Only pending tasks can be processed.`,
-    //     currentStatus: task.status
-    //   });
-    // }
     
     console.log(`Processing task: ${task.title}`);
     
@@ -173,55 +170,94 @@ router.post('/:id/process', async (req, res, next) => {
         startedAt: new Date().toISOString() 
       }
     });
-    console.log('task updated')
 
     try {
-      // 5. Generate content with Claude
-      // const generatedContent = await processTaskWithClaude(task);
-      // console.log('generatedContent', generatedContent)
+      // 5a. OPTION 1: Generate content with Claude API (Real AI - Costs tokens)
+      console.log('🤖 Generating component with Claude API...');
+      const generatedContent = await processTaskWithClaude(task);
       
-      // 5. Use mock component instead of expensive Claude API call
-      console.log('🎭 Using mock component data (no API cost!)');
-      const mockComponent = getMockComponent('headerComponent');
-      const generatedContent = createMockGeneratedContent('headerComponent');
-      
-      // Add the actual component content to the response
-      generatedContent.content = mockComponent.content;
-      
-      console.log('generatedContent from mock:', {
+      console.log('generatedContent from Claude:', {
         tokensUsed: generatedContent.tokensUsed,
-        contentLength: generatedContent.content.length
+        contentLength: generatedContent.content?.length || 0
       });
       
-      // 6. Save to GitHub
-      // await saveRequestToGitHub(task, generatedContent);
-      
-      // 7. Update task with results
+      // 7a. Update task with Claude-generated results
       const updatedTask = await Task.findByIdAndUpdate(taskId, {
         status: 'completed',
         result: generatedContent,
         generatedContent: {
           type: 'component',
-          // filename: `${task.title.replace(/\s+/g, '')}Component.tsx`,
-          // content: generatedContent.content,
-          // description: `Generated content for ${task.title}`
-          filename: mockComponent.filename,
-          content: mockComponent.content,
-          description: mockComponent.description
+          filename: `${task.title.replace(/\s+/g, '')}Component.tsx`,
+          content: generatedContent.content,
+          description: `Generated component for ${task.title}`
         },
         metadata: {
           ...task.metadata,
           completedAt: new Date().toISOString(),
-          model: 'claude-3-5-sonnet-20241022',
+          model: generatedContent.model || 'claude-3-5-sonnet-20241022',
           tokensUsed: generatedContent.tokensUsed || 0
         }
       }, { new: true });
       
-      // 8. 🚀 AUTO-DEPLOY: Write component to React project
+      // 5b. OPTION 2: Use mock component data (No API cost - For development)
+      // console.log('🎭 Using mock component data (no API cost!)');
+      // const mockComponent = getMockComponent('headerComponent');
+      // const generatedContent = createMockGeneratedContent('headerComponent');
+      // 
+      // // Add the actual component content to the response
+      // generatedContent.content = mockComponent.content;
+      // 
+      // console.log('generatedContent from mock:', {
+      //   tokensUsed: generatedContent.tokensUsed,
+      //   contentLength: generatedContent.content.length
+      // });
+      // 
+      // // 7b. Update task with mock results
+      // const updatedTask = await Task.findByIdAndUpdate(taskId, {
+      //   status: 'completed',
+      //   result: generatedContent,
+      //   generatedContent: {
+      //     type: 'component',
+      //     filename: mockComponent.filename,
+      //     content: mockComponent.content,
+      //     description: mockComponent.description
+      //   },
+      //   metadata: {
+      //     ...task.metadata,
+      //     completedAt: new Date().toISOString(),
+      //     model: 'claude-3-5-sonnet-20241022',
+      //     tokensUsed: generatedContent.tokensUsed || 0
+      //   }
+      // }, { new: true });
+      
+      // 8. 🚀 AUTO-DEPLOY: Choose deployment method
       let deploymentResult = null;
-      if (process.env.ENABLE_AUTO_DEPLOYMENT === 'true') {
+      
+      if (useGitHubApi) {
+        // 🌐 PRODUCTION: Use GitHub API
         try {
-          console.log('🚀 Starting auto-deployment pipeline...');
+          console.log('🌐 Starting GitHub API deployment...');
+          
+          deploymentResult = await GitHubApiService.deployComponentToGitHub(
+            updatedTask.generatedContent,
+            updatedTask
+          );
+          
+        } catch (deployError) {
+          console.error('❌ GitHub API deployment failed:', deployError);
+          
+          deploymentResult = {
+            deployed: false,
+            error: deployError.message,
+            attemptedAt: new Date().toISOString(),
+            deploymentType: 'github-api'
+          };
+        }
+        
+      } else if (useLocalDeploy) {
+        // 💻 LOCAL: Use file system operations
+        try {
+          console.log('💻 Starting local file system deployment...');
           
           // Resolve any naming conflicts
           const finalFilename = await FileSystemService.resolveComponentName(
@@ -239,7 +275,7 @@ router.post('/:id/process', async (req, res, next) => {
           
           console.log(`✅ Component auto-deployed: ${finalFilename}`);
           
-          // 🎯 NEW: Auto-inject component into GenerationPage.jsx
+          // Auto-inject component into GenerationPage.jsx
           const injectionSuccess = await FileSystemService.injectComponentIntoGenerationPage(
             finalFilename,
             updatedTask
@@ -251,7 +287,6 @@ router.post('/:id/process', async (req, res, next) => {
             filename: finalFilename
           });
           
-          // Update task with deployment info
           deploymentResult = {
             deployed: true,
             localPath: filePath,
@@ -259,35 +294,35 @@ router.post('/:id/process', async (req, res, next) => {
             componentCount: componentCount,
             injectedIntoPage: injectionSuccess,
             deployedAt: new Date().toISOString(),
-            productionDeployment: productionDeployment
+            productionDeployment: productionDeployment,
+            deploymentType: 'local-files'
           };
           
-          await Task.findByIdAndUpdate(taskId, {
-            'metadata.deployment': deploymentResult
-          });
-          
         } catch (deployError) {
-          console.error('❌ Auto-deployment failed:', deployError);
+          console.error('❌ Local deployment failed:', deployError);
           
           deploymentResult = {
             deployed: false,
             error: deployError.message,
-            attemptedAt: new Date().toISOString()
+            attemptedAt: new Date().toISOString(),
+            deploymentType: 'local-files'
           };
-          
-          await Task.findByIdAndUpdate(taskId, {
-            'metadata.deployment': deploymentResult
-          });
         }
+      } else {
+        console.log('📴 Auto-deployment disabled');
+        deploymentResult = {
+          deployed: false,
+          reason: 'Auto-deployment disabled in environment',
+          deploymentType: 'none'
+        };
       }
       
-      // 9. Update request index in GitHub
-      // await updateRequestIndex([{
-      //   taskId: task._id,
-      //   title: task.title,
-      //   type: task.type,
-      //   status: 'completed'
-      // }]);
+      // Update task with deployment info
+      if (deploymentResult) {
+        await Task.findByIdAndUpdate(taskId, {
+          'metadata.deployment': deploymentResult
+        });
+      }
       
       console.log(`✅ Successfully processed task ${taskId}`);
       
@@ -296,7 +331,6 @@ router.post('/:id/process', async (req, res, next) => {
         message: `Task "${task.title}" processed successfully`,
         task: updatedTask,
         result: generatedContent,
-        githubPath: `content/requests/req_${taskId}.json`,
         deployment: deploymentResult
       });
       
