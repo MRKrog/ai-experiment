@@ -87,6 +87,22 @@ export class TaskService {
     return response.json();
   }
 
+  // Process a task
+  static async processTask(taskId: string): Promise<Task> {
+    const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/process`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to process task');
+    }
+
+    return response.json();
+  }
+
   // Update a task with generated content
   static async updateTaskWithGeneratedContent(
     taskId: string, 

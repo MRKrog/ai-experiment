@@ -9,7 +9,11 @@
     "build": "npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["api", "ai", "task-management"],
+  "keywords": [
+    "api",
+    "ai",
+    "task-management"
+  ],
   "author": "",
   "license": "ISC",
   "description": "API for managing AI generation tasks",
@@ -17,6 +21,8 @@
     "node": "20.x"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "@octokit/rest": "^22.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",

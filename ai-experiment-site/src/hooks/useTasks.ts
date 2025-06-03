@@ -64,9 +64,13 @@ export const useTasks = (): UseTasksReturn => {
   };
 
   // Update task status
-  const updateTaskStatus = async (taskId: string, status: Task['status']) => {
+  const updateTaskStatus = async (taskId: string) => {
     try {
-      await TaskService.updateTaskStatus(taskId, status);
+      // await TaskService.updateTaskStatus(taskId, status);
+      console.log('processing task', taskId)
+      
+      const result = await TaskService.processTask(taskId);
+      console.log('result', result)
       // Refresh all tasks to ensure consistency with server
       await refreshTasks();
       setError(null);

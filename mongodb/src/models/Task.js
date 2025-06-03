@@ -35,6 +35,24 @@ const taskSchema = new Schema({
     type: Schema.Types.Mixed,
     default: null
   },
+  generatedContent: {
+    type: {
+      type: String,
+      default: null
+    },
+    filename: {
+      type: String,
+      default: null
+    },
+    content: {
+      type: String,
+      default: null
+    },
+    description: {
+      type: String,
+      default: null
+    }
+  },
   error: {
     type: String,
     default: null
