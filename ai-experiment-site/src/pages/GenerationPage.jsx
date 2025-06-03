@@ -1,4 +1,5 @@
 import React from 'react';
+import { CreateNewFooterComponent } from '../components/generated';
 
 
 function GenerationPage() {
@@ -10,6 +11,19 @@ function GenerationPage() {
           
 
           {/* AUTO-GENERATED COMPONENTS APPEAR HERE */}
+          {/* Auto-injected: Create New Footer */}
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-white mb-4">🎉 Create New Footer</h3>
+            <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
+              <div className="bg-white rounded-lg p-6 mb-4">
+                <CreateNewFooterComponent title="Create New Footer" />
+              </div>
+              <p className="text-gray-400 text-sm">
+                ↗️ Auto-generated: Create a new interactive UI component (e.g., dropdown, modal, carousel)
+              </p>
+            </div>
+          </div>
+
 
 
           <div>
