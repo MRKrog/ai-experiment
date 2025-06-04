@@ -1,6 +1,6 @@
 import React from 'react';
 
-
+// Updated to trigger deployment - generated components will be live after this deploys
 function GenerationPage() {
   return (
     <main className="flex-1 w-full overflow-y-auto">
