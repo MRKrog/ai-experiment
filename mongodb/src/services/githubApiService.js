@@ -362,6 +362,30 @@ ${exports}
     return filename;
   }
 
+  // Trigger deployment via repository dispatch
+  static async triggerDeployment() {
+    try {
+      const octokit = this.getOctokit();
+      const { owner, repo } = this.getRepoInfo();
+      
+      await octokit.rest.repos.createDispatchEvent({
+        owner,
+        repo,
+        event_type: 'trigger-website-deploy',
+        client_payload: {
+          reason: 'auto-generated-component',
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+      console.log('✅ Deployment triggered via repository dispatch');
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to trigger deployment:', error);
+      return false;
+    }
+  }
+
   // Main deployment function
   static async deployComponentToGitHub(componentData, task) {
     try {
@@ -383,6 +407,9 @@ ${exports}
       
       // 4. Inject component into GenerationPage
       const injectionSuccess = await this.injectComponentIntoGenerationPage(finalFilename, task);
+      
+      // 5. Trigger deployment
+      await this.triggerDeployment();
       
       console.log(`✅ GitHub deployment completed for ${finalFilename}`);
       
