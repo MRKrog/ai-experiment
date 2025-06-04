@@ -1,19 +1,28 @@
-# 🌐 WEBSITE DEPLOYMENT WORKFLOW
+# 🛑 FIXED WEBSITE DEPLOYMENT WORKFLOW - NO INFINITE LOOPS
 # .github/workflows/deploy-website.yml
 
 name: Deploy Website
 
 on:
-  # Deploy when content changes
+  # Deploy when content changes OR manual website changes (but NOT auto-generated files)
   push:
     paths:
-      - 'content/**'
-      - 'ai-experiment-site/src/**'
-      - 'ai-experiment-site/public/**'
+      - 'content/**'  # Content changes should trigger deployment
+      # Website changes - but EXCLUDE auto-generated paths
       - 'ai-experiment-site/package*.json'
-      - 'ai-experiment-site/vite.config.js'
+      - 'ai-experiment-site/vite.config.js' 
       - 'ai-experiment-site/tailwind.config.js'
-      - '!ai-experiment-site/src/components/generated/**'  # Exclude auto-generated components
+      - 'ai-experiment-site/src/components/**'
+      - 'ai-experiment-site/src/pages/**'
+      - 'ai-experiment-site/src/hooks/**'
+      - 'ai-experiment-site/src/utils/**'
+      - 'ai-experiment-site/src/styles/**'
+      - 'ai-experiment-site/src/App.jsx'
+      - 'ai-experiment-site/src/main.jsx'
+      - 'ai-experiment-site/public/**'
+      # EXCLUDE auto-generated paths that could cause loops
+      - '!ai-experiment-site/src/components/generated/**'
+      - '!ai-experiment-site/src/pages/GenerationPage.jsx'  # If this is auto-modified
     branches: [ main ]
   
   # Allow manual deployment
@@ -24,12 +33,11 @@ permissions:
   contents: read
   pages: write
   id-token: write
-  issues: write
 
-# Allow only one concurrent deployment
+# Allow only one concurrent deployment, skip in-progress runs
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true  # Cancel previous runs to prevent buildup
 
 jobs:
   build-and-deploy:
@@ -61,7 +69,9 @@ jobs:
     - name: Copy content to public
       run: |
         mkdir -p ai-experiment-site/public/content
-        cp -r content/* ai-experiment-site/public/content/
+        if [ -d "content" ]; then
+          cp -r content/* ai-experiment-site/public/content/ || echo "No content files found"
+        fi
     
     # 5. Build the website
     - name: Build website
@@ -69,6 +79,7 @@ jobs:
         VITE_GITHUB_TOKEN: ${{ secrets.PUBLIC_GITHUB_TOKEN }}
         VITE_GITHUB_OWNER: ${{ github.repository_owner }}
         VITE_GITHUB_REPO: ${{ github.event.repository.name }}
+        CI: false
       run: |
         cd ai-experiment-site
         npm run build
