@@ -1,12 +1,12 @@
-# 🤖 DAILY AI CONTENT GENERATION
+# 🤖 WEEKLY AI CONTENT GENERATION
 # .github/workflows/daily-content.yml
 
-name: Daily AI Content Generation
+name: Weekly AI Content Generation
 
 on:
-  # Run once per day at 10:00 AM UTC
+  # Run once per week on Monday at 10:00 AM UTC
   schedule:
-    - cron: '0 10 * * *'
+    - cron: '0 10 * * 1'
   
   # Allow manual triggering for testing
   workflow_dispatch:

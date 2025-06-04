@@ -1,6 +1,4 @@
 import React from 'react';
-import { CreateNewRedButtonComponent } from '../components/generated';
-
 
 function GenerationPage() {
   return (
