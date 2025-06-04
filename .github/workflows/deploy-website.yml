@@ -27,6 +27,14 @@ on:
   
   # Allow manual deployment
   workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for deployment'
+        required: false
+        default: 'manual'
+      timestamp:
+        description: 'Timestamp of trigger'
+        required: false
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:

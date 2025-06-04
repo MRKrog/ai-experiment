@@ -61,13 +61,24 @@ export class TaskService {
 
   // Delete a task
   static async deleteTask(taskId: string): Promise<void> {
+    console.log('🗑️ Attempting to delete task:', taskId);
+    
     const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
       method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
+    console.log('Delete response status:', response.status);
+    
     if (!response.ok) {
-      throw new Error('Failed to delete task');
+      const errorText = await response.text();
+      console.error('Delete task error response:', errorText);
+      throw new Error(`Failed to delete task: ${response.status} ${response.statusText} - ${errorText}`);
     }
+    
+    console.log('✅ Task deleted successfully');
   }
 
   // Update a task status
@@ -142,6 +153,22 @@ export class TaskService {
 
     if (!response.ok) {
       throw new Error('Failed to mark task as failed');
+    }
+
+    return response.json();
+  }
+
+  // Manual deployment trigger
+  static async deployComponents(): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${API_BASE_URL}/tasks/deploy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to trigger deployment: ${response.statusText}`);
     }
 
     return response.json();

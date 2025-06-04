@@ -128,7 +128,8 @@ export const ContentDialog: React.FC<ContentDialogProps> = ({
             <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
               task.status === 'pending' ? 'bg-blue-900/40 text-blue-200' :
               task.status === 'in_progress' ? 'bg-yellow-900/40 text-yellow-200' :
-              task.status === 'completed' ? 'bg-green-900/40 text-green-200' :
+              task.status === 'staged' ? 'bg-green-900/40 text-green-200' :
+              task.status === 'deployed' ? 'bg-emerald-900/40 text-emerald-200' :
               'bg-red-900/40 text-red-200'
             }`}>
               {task.status}
@@ -143,8 +144,8 @@ export const ContentDialog: React.FC<ContentDialogProps> = ({
             </div>
           </div>
 
-          {/* Generated Content Accordion - Only show if task is completed and has content */}
-          {task.status === 'completed' && task.generatedContent && (
+          {/* Generated Content Accordion - Only show if task is staged/deployed and has content */}
+          {(task.status === 'staged' || task.status === 'deployed') && task.generatedContent && (
             <div className="border border-gray-700 rounded-lg overflow-hidden">
               {/* Accordion Header */}
               <button

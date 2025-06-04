@@ -15,7 +15,8 @@ const Dashboard: React.FC = () => {
     error, 
     createTask, 
     deleteTask, 
-    updateTaskStatus 
+    updateTaskStatus,
+    deployComponents
   } = useTasks();
 
   // Handle task submission
@@ -46,6 +47,16 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  // Handle manual deployment
+  const handleDeploy = async () => {
+    try {
+      await deployComponents();
+      console.log('🚀 Deployment triggered successfully!');
+    } catch (err) {
+      console.error('❌ Deployment failed:', err);
+    }
+  };
+
   return (
     <main className="flex-1 w-full overflow-y-auto">
       <div className="max-w-[1400px] mx-auto px-8 py-8">
@@ -65,6 +76,7 @@ const Dashboard: React.FC = () => {
                 error={error}
                 onDelete={handleDelete}
                 onStartProcess={handleStartProcess}
+                onDeploy={handleDeploy}
               />
             </div>
 

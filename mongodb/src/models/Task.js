@@ -19,7 +19,7 @@ const taskSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'in_progress', 'completed', 'failed'],
+    enum: ['pending', 'in_progress', 'staged', 'deployed', 'failed'],
     default: 'pending'
   },
   type: {

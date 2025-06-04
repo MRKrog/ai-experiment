@@ -3,7 +3,7 @@ export interface Task {
   title: string;
   description: string;
   type: 'code_generation' | 'image_generation' | 'text_generation';
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  status: 'pending' | 'in_progress' | 'staged' | 'deployed' | 'failed';
   priority?: 'low' | 'medium' | 'high';
   prompt: string;
   createdAt: string | Date;

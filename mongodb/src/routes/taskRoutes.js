@@ -135,23 +135,7 @@ router.post('/:id/process', async (req, res, next) => {
   console.log(`🎯 Processing single task: ${taskId}`);
   
   try {
-    // Determine deployment method based on environment
-    const useGitHubApi = process.env.ENABLE_PRODUCTION_DEPLOY === 'true';
-    const useLocalDeploy = process.env.ENABLE_AUTO_DEPLOYMENT === 'true' && !useGitHubApi;
-    
-    console.log(`🔧 Deployment mode: ${useGitHubApi ? 'GitHub API' : useLocalDeploy ? 'Local Files' : 'None'}`);
-
-    // 1. Validate React project (on first run for local deployment only)
-    if (useLocalDeploy) {
-      try {
-        await FileSystemService.validateReactProject();
-      } catch (validationError) {
-        console.warn('⚠️ React project validation failed:', validationError.message);
-        console.warn('⚠️ Auto-deployment will be skipped');
-      }
-    }
-
-    // 2. Get the specific task
+    // Get the specific task
     const task = await Task.findById(taskId);
     if (!task) {
       return res.status(404).json({
@@ -183,7 +167,7 @@ router.post('/:id/process', async (req, res, next) => {
       
       // 7a. Update task with Claude-generated results
       const updatedTask = await Task.findByIdAndUpdate(taskId, {
-        status: 'completed',
+        status: 'staged',
         result: generatedContent,
         generatedContent: {
           type: 'component',
@@ -199,139 +183,52 @@ router.post('/:id/process', async (req, res, next) => {
         }
       }, { new: true });
       
-      // 5b. OPTION 2: Use mock component data (No API cost - For development)
-      // console.log('🎭 Using mock component data (no API cost!)');
-      // const mockComponent = getMockComponent('headerComponent');
-      // const generatedContent = createMockGeneratedContent('headerComponent');
-      // 
-      // // Add the actual component content to the response
-      // generatedContent.content = mockComponent.content;
-      // 
-      // console.log('generatedContent from mock:', {
-      //   tokensUsed: generatedContent.tokensUsed,
-      //   contentLength: generatedContent.content.length
-      // });
-      // 
-      // // 7b. Update task with mock results
-      // const updatedTask = await Task.findByIdAndUpdate(taskId, {
-      //   status: 'completed',
-      //   result: generatedContent,
-      //   generatedContent: {
-      //     type: 'component',
-      //     filename: mockComponent.filename,
-      //     content: mockComponent.content,
-      //     description: mockComponent.description
-      //   },
-      //   metadata: {
-      //     ...task.metadata,
-      //     completedAt: new Date().toISOString(),
-      //     model: 'claude-3-5-sonnet-20241022',
-      //     tokensUsed: generatedContent.tokensUsed || 0
-      //   }
-      // }, { new: true });
+      // 8. 🚀 STAGE DEPLOYMENT: Put component in repository during staging
+      console.log('📁 Staging component to repository...');
       
-      // 8. 🚀 AUTO-DEPLOY: Choose deployment method
-      let deploymentResult = null;
-      
-      if (useGitHubApi) {
-        // 🌐 PRODUCTION: Use GitHub API
-        try {
-          console.log('🌐 Starting GitHub API deployment...');
-          
-          deploymentResult = await GitHubApiService.deployComponentToGitHub(
-            updatedTask.generatedContent,
-            updatedTask
-          );
-          
-        } catch (deployError) {
-          console.error('❌ GitHub API deployment failed:', deployError);
-          
-          deploymentResult = {
-            deployed: false,
-            error: deployError.message,
-            attemptedAt: new Date().toISOString(),
-            deploymentType: 'github-api'
-          };
-        }
+      try {
+        const deploymentResult = await GitHubApiService.deployComponentToGitHub(
+          updatedTask.generatedContent,
+          updatedTask
+        );
         
-      } else if (useLocalDeploy) {
-        // 💻 LOCAL: Use file system operations
-        try {
-          console.log('💻 Starting local file system deployment...');
-          
-          // Resolve any naming conflicts
-          const finalFilename = await FileSystemService.resolveComponentName(
-            updatedTask.generatedContent.filename
-          );
-          
-          // Write the component file
-          const filePath = await FileSystemService.writeComponentFile(
-            finalFilename, 
-            updatedTask.generatedContent.content
-          );
-          
-          // Update exports index
-          const componentCount = await FileSystemService.updateExportsIndex();
-          
-          console.log(`✅ Component auto-deployed: ${finalFilename}`);
-          
-          // Auto-inject component into GenerationPage.jsx
-          const injectionSuccess = await FileSystemService.injectComponentIntoGenerationPage(
-            finalFilename,
-            updatedTask
-          );
-          
-          // Deploy to production (if enabled)
-          const productionDeployment = await FileSystemService.deployToProduction({
-            title: task.title,
-            filename: finalFilename
-          });
-          
-          deploymentResult = {
-            deployed: true,
-            localPath: filePath,
-            finalFilename: finalFilename,
-            componentCount: componentCount,
-            injectedIntoPage: injectionSuccess,
-            deployedAt: new Date().toISOString(),
-            productionDeployment: productionDeployment,
-            deploymentType: 'local-files'
-          };
-          
-        } catch (deployError) {
-          console.error('❌ Local deployment failed:', deployError);
-          
-          deploymentResult = {
-            deployed: false,
-            error: deployError.message,
-            attemptedAt: new Date().toISOString(),
-            deploymentType: 'local-files'
-          };
-        }
-      } else {
-        console.log('📴 Auto-deployment disabled');
-        deploymentResult = {
-          deployed: false,
-          reason: 'Auto-deployment disabled in environment',
-          deploymentType: 'none'
-        };
-      }
-      
-      // Update task with deployment info
-      if (deploymentResult) {
+        // Update task with staging deployment info
         await Task.findByIdAndUpdate(taskId, {
-          'metadata.deployment': deploymentResult
+          'metadata.staged': {
+            deployed: true,
+            ...deploymentResult,
+            stagedAt: new Date().toISOString()
+          }
+        });
+        
+        console.log(`✅ Component successfully staged to repository: ${deploymentResult.finalFilename}`);
+        
+      } catch (stagingError) {
+        console.error('❌ Failed to stage component to repository:', stagingError);
+        
+        // Still mark as staged even if GitHub deployment fails
+        await Task.findByIdAndUpdate(taskId, {
+          'metadata.staged': {
+            deployed: false,
+            error: stagingError.message,
+            attemptedAt: new Date().toISOString()
+          }
         });
       }
       
-      console.log(`✅ Successfully processed task ${taskId}`);
+      // 9. 📋 STAGING COMPLETE: Component ready for deployment
+      console.log(`✅ Successfully processed task ${taskId} (component staged in repository)`);
       
       res.json({
         success: true,
-        message: `Task "${task.title}" processed successfully`,
+        message: `Task "${task.title}" processed successfully. Component staged in repository.`,
         task: updatedTask,
         result: generatedContent,
-        deployment: deploymentResult
+        deployment: { 
+          deployed: updatedTask.metadata?.staged?.deployed || false, 
+          reason: updatedTask.metadata?.staged?.error || 'Component staged - use Deploy button to go live',
+          deploymentType: 'staged' 
+        }
       });
       
     } catch (processingError) {
@@ -356,6 +253,72 @@ router.post('/:id/process', async (req, res, next) => {
     
   } catch (error) {
     console.error(`💥 Single task processing error:`, error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
+  }
+});
+
+// Manual deployment trigger endpoint
+router.post('/deploy', async (req, res, next) => {
+  try {
+    console.log('🚀 Manual deployment triggered');
+    
+    // 1. Check if there are any staged components
+    const stagedTasks = await Task.find({ 
+      status: 'staged',
+      'metadata.staged.deployed': true
+    });
+    
+    console.log(`📦 Found ${stagedTasks.length} staged components ready for deployment`);
+    
+    if (stagedTasks.length === 0) {
+      return res.json({
+        success: false,
+        message: 'No staged components found. Components must be processed first.',
+        tasksUpdated: 0
+      });
+    }
+    
+    // 2. Trigger GitHub workflow to build and deploy website
+    console.log('🌐 Triggering GitHub Pages deployment...');
+    const workflowResult = await GitHubApiService.triggerDeployment();
+    
+    if (workflowResult) {
+      // 3. Update all staged tasks to deployed status
+      const updateResult = await Task.updateMany(
+        { 
+          status: 'staged',
+          'metadata.staged.deployed': true
+        },
+        { 
+          status: 'deployed',
+          'metadata.deployedAt': new Date().toISOString()
+        }
+      );
+      
+      console.log(`✅ Updated ${updateResult.modifiedCount} tasks to deployed status`);
+      
+      res.json({
+        success: true,
+        message: `Successfully triggered deployment of ${stagedTasks.length} components`,
+        triggeredAt: new Date().toISOString(),
+        tasksUpdated: updateResult.modifiedCount,
+        componentsDeployed: stagedTasks.map(task => ({
+          title: task.title,
+          filename: task.generatedContent?.filename
+        }))
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to trigger GitHub Pages deployment'
+      });
+    }
+    
+  } catch (error) {
+    console.error('💥 Manual deployment error:', error);
     res.status(500).json({ 
       success: false,
       error: error.message 

@@ -6,8 +6,9 @@ interface ContentTasksProps {
   tasks: Task[];
   loading?: boolean;
   error?: string | null;
-  onDelete?: (id: string) => void;
+  onDelete?: (taskId: string) => void;
   onStartProcess?: (task: Task) => void;
+  onDeploy?: () => void;
 }
 
 export const ContentTasks: React.FC<ContentTasksProps> = ({
@@ -15,7 +16,8 @@ export const ContentTasks: React.FC<ContentTasksProps> = ({
   loading = false,
   error,
   onDelete,
-  onStartProcess
+  onStartProcess,
+  onDeploy
 }) => {
   return (
     <section>
@@ -39,6 +41,7 @@ export const ContentTasks: React.FC<ContentTasksProps> = ({
             isLoading={loading}
             onDelete={onDelete}
             onStartProcess={onStartProcess}
+            onDeploy={onDeploy}
           />
         ) : (
           <div className="flex items-center justify-center h-full">

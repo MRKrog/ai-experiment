@@ -362,6 +362,31 @@ ${exports}
     return filename;
   }
 
+  // Trigger deployment via workflow dispatch (safer than repository dispatch)
+  static async triggerDeployment() {
+    try {
+      const octokit = this.getOctokit();
+      const { owner, repo } = this.getRepoInfo();
+      
+      await octokit.rest.actions.createWorkflowDispatch({
+        owner,
+        repo,
+        workflow_id: 'deploy-website.yml',
+        ref: 'main',
+        inputs: {
+          reason: 'auto-generated-component',
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+      console.log('✅ Deployment triggered via workflow dispatch');
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to trigger deployment:', error);
+      return false;
+    }
+  }
+
   // Main deployment function
   static async deployComponentToGitHub(componentData, task) {
     try {

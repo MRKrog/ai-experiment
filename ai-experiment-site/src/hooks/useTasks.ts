@@ -9,6 +9,7 @@ interface UseTasksReturn {
   createTask: (formData: TaskFormData) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
   updateTaskStatus: (taskId: string, status: Task['status']) => Promise<void>;
+  deployComponents: () => Promise<void>;
   refreshTasks: () => Promise<void>;
 }
 
@@ -52,13 +53,17 @@ export const useTasks = (): UseTasksReturn => {
   // Delete a task
   const deleteTask = async (taskId: string) => {
     try {
+      console.log('🗑️ Hook: Deleting task', taskId);
       await TaskService.deleteTask(taskId);
+      console.log('✅ Hook: Task deleted, refreshing list...');
       // Refresh all tasks to ensure consistency with server
       await refreshTasks();
       setError(null);
+      console.log('✅ Hook: Task list refreshed');
     } catch (err) {
-      setError('Failed to delete task');
-      console.error('Error deleting task:', err);
+      const errorMessage = `Failed to delete task: ${err instanceof Error ? err.message : 'Unknown error'}`;
+      setError(errorMessage);
+      console.error('❌ Hook: Error deleting task:', err);
       throw err;
     }
   };
@@ -81,6 +86,22 @@ export const useTasks = (): UseTasksReturn => {
     }
   };
 
+  // Deploy components manually
+  const deployComponents = async () => {
+    try {
+      setLoading(true);
+      const result = await TaskService.deployComponents();
+      console.log('Deployment triggered:', result);
+      setError(null);
+    } catch (err) {
+      setError('Failed to trigger deployment');
+      console.error('Error triggering deployment:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Load tasks on mount
   useEffect(() => {
     refreshTasks();
@@ -93,6 +114,7 @@ export const useTasks = (): UseTasksReturn => {
     createTask,
     deleteTask,
     updateTaskStatus,
+    deployComponents,
     refreshTasks
   };
 }; 
