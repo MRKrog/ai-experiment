@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 // Load environment variables first
 dotenv.config();
 
-const modelAI = 'claude-3-haiku-20240307';
+const modelAI = 'claude-3-haiku-20240307'; // Keep cheaper model, smart prompt does the work
 
 // Initialize Claude at module level (more efficient)
 const anthropic = new Anthropic({
@@ -24,10 +24,8 @@ export async function processTaskWithClaude(task) {
     // 2. Call Claude API
     console.log('🔄 Calling Claude API...');
     const response = await anthropic.messages.create({
-      // model: 'claude-3-5-sonnet-20241022', // better model
-      // max_tokens: 2000, // Adjust based on your needs
-      model: modelAI, // ~90% cheaper
-      max_tokens: 1000, // Half the cost
+      model: modelAI, // Cheaper model with smart prompting
+      max_tokens: 1500, // Reasonable token limit for components
       messages: [{
         role: 'user',
         content: prompt
@@ -167,33 +165,46 @@ export default ${componentName};`;
 
 // ===== PROMPT BUILDER FUNCTION =====
 function buildPromptForTask(task) {
-  // For code generation tasks, use a specific React component prompt
+  // For code generation tasks, use a smart React component prompt
   if (task.type === 'code_generation') {
     const componentName = task.title.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '') + 'Component';
     
-    return `You are an expert React/TypeScript developer. Create a single, complete React component based on this request:
+    return `You are an expert React/TypeScript developer. Your task is to create a React component based on the user's request.
 
-**Title:** ${task.title}
-**Description:** ${task.description}
-**Requirements:** ${task.prompt}
+**User Request Analysis:**
+Title: "${task.title}"
+Description: "${task.description}"
+Additional Requirements: "${task.prompt}"
 
-IMPORTANT INSTRUCTIONS:
-- Component must be named exactly: ${componentName}
-- Provide ONLY the React component code in a single TypeScript code block
+**Chain of Thought - Analyze what the user wants:**
+1. Look at the title and description to understand the ACTUAL component they want
+2. If they say "Create New [X]", they want an actual [X] component, not a tool for creating [X]
+3. Consider the context and description to determine the component's purpose
+4. Think about what props, styling, and functionality this component should have
+
+**Examples of Good Interpretation:**
+- "Create New Header" + "Navigation bar" → Build an actual header/navigation component
+- "Blue Button" + "Call to action" → Build an actual button component with blue styling  
+- "User Card" + "Display user info" → Build an actual card that displays user information
+- "Contact Form" + "Email form" → Build an actual form component for contact
+
+**Component Requirements:**
+- Component name must be exactly: ${componentName}
 - Use React functional components with TypeScript
-- Include proper imports (React, any needed libraries)
-- Export the component as: export default ${componentName}
+- Include proper TypeScript interfaces for props
 - Use Tailwind CSS for styling
-- Make the component self-contained and reusable
-- Do NOT include explanations, usage examples, or multiple code blocks
-- Do NOT include installation instructions or additional files
+- Make it reusable and well-structured
+- Include sensible default props where appropriate
+- Add hover effects and interactive states where relevant
 
-Return ONLY the component code that can be directly saved as a .tsx file.`;
+**Output Format:**
+Provide ONLY the complete React component code in a TypeScript code block. No explanations, no usage examples, no additional text - just the clean, production-ready component code.
+
+Now create the component based on your analysis of what the user actually wants:`;
   }
 
-  // Different prompt templates based on task type
+  // Keep existing logic for other task types
   const promptTemplates = {
-    
     text_generation: `You are a skilled content writer. Create engaging, high-quality content based on this request:
 
 **Title:** ${task.title}
