@@ -69,7 +69,7 @@ export class GitHubApiService {
       // Generate exports content
       const exports = componentFiles.map(file => {
         const componentName = file.replace('.tsx', '');
-        return `export { ${componentName} } from './${componentName}';`;
+        return `export { default as ${componentName} } from './${componentName}';`;
       }).join('\n');
       
       const indexContent = `// Auto-generated exports for generated components

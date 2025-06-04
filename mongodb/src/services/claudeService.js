@@ -169,6 +169,8 @@ export default ${componentName};`;
 function buildPromptForTask(task) {
   // For code generation tasks, use a specific React component prompt
   if (task.type === 'code_generation') {
+    const componentName = task.title.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '') + 'Component';
+    
     return `You are an expert React/TypeScript developer. Create a single, complete React component based on this request:
 
 **Title:** ${task.title}
@@ -176,10 +178,11 @@ function buildPromptForTask(task) {
 **Requirements:** ${task.prompt}
 
 IMPORTANT INSTRUCTIONS:
+- Component must be named exactly: ${componentName}
 - Provide ONLY the React component code in a single TypeScript code block
 - Use React functional components with TypeScript
 - Include proper imports (React, any needed libraries)
-- Include proper export default statement
+- Export the component as: export default ${componentName}
 - Use Tailwind CSS for styling
 - Make the component self-contained and reusable
 - Do NOT include explanations, usage examples, or multiple code blocks
