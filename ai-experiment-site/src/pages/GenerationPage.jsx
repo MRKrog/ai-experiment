@@ -1,5 +1,6 @@
 import React from 'react';
 
+
 function GenerationPage() {
   return (
     <main className="flex-1 w-full overflow-y-auto">
