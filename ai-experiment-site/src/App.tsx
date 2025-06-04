@@ -12,7 +12,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<RootLayout />}>
           <Route index element={<Dashboard />} />
-          <Route path="content" element={<GenerationPage />} />
+          <Route path="content/*" element={<GenerationPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
