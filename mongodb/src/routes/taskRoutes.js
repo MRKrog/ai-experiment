@@ -286,19 +286,19 @@ router.post('/deploy', async (req, res, next) => {
     const workflowResult = await GitHubApiService.triggerDeployment();
     
     if (workflowResult) {
-      // 3. Update all staged tasks to deployed status
+      // 3. Update all staged tasks to deploying status (not deployed yet!)
       const updateResult = await Task.updateMany(
         { 
           status: 'staged',
           'metadata.staged.deployed': true
         },
         { 
-          status: 'deployed',
-          'metadata.deployedAt': new Date().toISOString()
+          status: 'deploying',
+          'metadata.deployingAt': new Date().toISOString()
         }
       );
       
-      console.log(`✅ Updated ${updateResult.modifiedCount} tasks to deployed status`);
+      console.log(`✅ Updated ${updateResult.modifiedCount} tasks to deploying status`);
       
       res.json({
         success: true,
@@ -308,7 +308,8 @@ router.post('/deploy', async (req, res, next) => {
         componentsDeployed: stagedTasks.map(task => ({
           title: task.title,
           filename: task.generatedContent?.filename
-        }))
+        })),
+        note: 'Components are now deploying. Status will update to "live" when deployment completes.'
       });
     } else {
       res.status(500).json({
@@ -319,6 +320,86 @@ router.post('/deploy', async (req, res, next) => {
     
   } catch (error) {
     console.error('💥 Manual deployment error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
+  }
+});
+
+// GitHub webhook endpoint for deployment status
+router.post('/webhook/github', async (req, res, next) => {
+  try {
+    console.log('🔔 GitHub webhook received:', req.body.action);
+    
+    // Verify it's a workflow_run event
+    if (req.body.action === 'completed' && req.body.workflow_run) {
+      const workflowRun = req.body.workflow_run;
+      
+      // Check if it's our deploy workflow
+      if (workflowRun.name === 'Deploy Website') {
+        console.log(`📋 Workflow completed with status: ${workflowRun.conclusion}`);
+        
+        if (workflowRun.conclusion === 'success') {
+          // Update all deploying tasks to live status
+          const updateResult = await Task.updateMany(
+            { status: 'deploying' },
+            { 
+              status: 'live',
+              'metadata.liveAt': new Date().toISOString(),
+              'metadata.deploymentUrl': `https://mrkrog.github.io/ai-experiment/content/`
+            }
+          );
+          
+          console.log(`✅ Updated ${updateResult.modifiedCount} tasks to live status`);
+          
+        } else {
+          // Mark as deploy failed
+          await Task.updateMany(
+            { status: 'deploying' },
+            { 
+              status: 'deploy_failed',
+              'metadata.deployFailedAt': new Date().toISOString(),
+              'metadata.deployError': `Workflow failed: ${workflowRun.conclusion}`
+            }
+          );
+          
+          console.log(`❌ Marked tasks as deploy_failed due to workflow failure`);
+        }
+      }
+    }
+    
+    res.json({ received: true });
+    
+  } catch (error) {
+    console.error('💥 GitHub webhook error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Migration endpoint - convert old "deployed" tasks to "live"
+router.post('/migrate-status', async (req, res, next) => {
+  try {
+    console.log('🔄 Migrating old "deployed" tasks to "live" status...');
+    
+    const updateResult = await Task.updateMany(
+      { status: 'deployed' },
+      { 
+        status: 'live',
+        'metadata.migratedAt': new Date().toISOString()
+      }
+    );
+    
+    console.log(`✅ Migrated ${updateResult.modifiedCount} tasks from "deployed" to "live"`);
+    
+    res.json({
+      success: true,
+      message: `Successfully migrated ${updateResult.modifiedCount} tasks`,
+      migratedCount: updateResult.modifiedCount
+    });
+    
+  } catch (error) {
+    console.error('💥 Migration error:', error);
     res.status(500).json({ 
       success: false,
       error: error.message 

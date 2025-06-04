@@ -21,7 +21,10 @@ const TasksTable: React.FC<TasksTableProps> = ({ tasks = [], isLoading = false, 
       pending: 'bg-blue-900/40 text-blue-200',
       in_progress: 'bg-yellow-900/40 text-yellow-200',
       staged: 'bg-green-900/40 text-green-200',
+      deploying: 'bg-purple-900/40 text-purple-200',
+      live: 'bg-emerald-900/40 text-emerald-200',
       deployed: 'bg-emerald-900/40 text-emerald-200',
+      deploy_failed: 'bg-orange-900/40 text-orange-200',
       failed: 'bg-red-900/40 text-red-200'
     };
     return `inline-flex ml-2 px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${classes[status as keyof typeof classes] || 'bg-gray-700 text-gray-300'}`;
@@ -137,27 +140,38 @@ const TasksTable: React.FC<TasksTableProps> = ({ tasks = [], isLoading = false, 
                 <div className="flex items-center justify-end gap-2">
                   {/* Deploy Button - Only show for staged tasks */}
                   {task.status === 'staged' && onDeploy && (
-                    <Tooltip content="Deploy to website">
+                    <Tooltip content="Deploy component to live website">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           onDeploy();
                         }}
-                        className="p-1.5 text-green-400 hover:text-green-300 hover:bg-green-900/20 rounded transition-colors"
-                        aria-label="Deploy component"
+                        className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/30 rounded transition-colors"
                       >
-                        <RocketLaunchIcon className="h-4 w-4" />
+                        <RocketLaunchIcon className="w-4 h-4" />
                       </button>
                     </Tooltip>
                   )}
                   
-                  {/* Live Indicator - Show for deployed tasks */}
-                  {task.status === 'deployed' && (
+                  {/* Live Indicator - Show for live tasks */}
+                  {(task.status === 'live' || task.status === 'deployed') && (
                     <Tooltip content="Live on website">
                       <div className="p-1.5 text-emerald-400 rounded">
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                           <span className="text-xs font-medium">LIVE</span>
+                        </div>
+                      </div>
+                    </Tooltip>
+                  )}
+                  
+                  {/* Deploying Indicator - Show for deploying tasks */}
+                  {task.status === 'deploying' && (
+                    <Tooltip content="Deploying to website">
+                      <div className="p-1.5 text-purple-400 rounded">
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-purple-400 rounded-full animate-spin"></div>
+                          <span className="text-xs font-medium">DEPLOYING</span>
                         </div>
                       </div>
                     </Tooltip>
