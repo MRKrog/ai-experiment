@@ -171,6 +171,19 @@ ${exports}
         return false;
       }
       
+      // Get the component content for prop analysis
+      let componentContent = '';
+      try {
+        const componentFile = await octokit.rest.repos.getContent({
+          owner,
+          repo,
+          path: `ai-experiment-site/src/components/generated/${componentName}`
+        });
+        componentContent = Buffer.from(componentFile.data.content, 'base64').toString('utf8');
+      } catch (error) {
+        console.warn('Could not get component content for prop analysis:', error.message);
+      }
+      
       let updatedContent = currentContent;
       
       // 1. Add import statement
@@ -202,7 +215,7 @@ ${exports}
       }
       
       // Create component JSX with sample props
-      const sampleProps = this.generateSampleProps(componentFileName, task);
+      const sampleProps = this.generateSampleProps(componentFileName, task, componentContent);
       const componentJSX = `
           {/* Auto-injected: ${task.title} */}
           <div className="mb-8">
@@ -243,11 +256,17 @@ ${exports}
   }
 
   // Generate sample props for different component types
-  static generateSampleProps(componentName, task) {
-    const name = componentName.toLowerCase();
+  static generateSampleProps(componentName, task, componentContent = '') {
+    // Try to analyze the actual component content to determine props
+    if (componentContent) {
+      const propsAnalysis = this.analyzeComponentProps(componentContent);
+      if (propsAnalysis) {
+        return propsAnalysis;
+      }
+    }
     
-    // For now, use generic props that work with most components
-    // TODO: Parse the component file to extract actual prop types
+    // Fallback to name-based detection
+    const name = componentName.toLowerCase();
     
     if (name.includes('dropdown')) {
       return ` 
@@ -262,12 +281,6 @@ ${exports}
       return ` 
         title="Auto-Generated Header!" 
         subtitle="${task.description}"`;
-    } else if (name.includes('button')) {
-      return ` 
-        variant="primary"
-        size="md">
-        Click Me!
-      </${componentName}`;
     } else if (name.includes('card')) {
       return ` 
         title="${task.title}"
@@ -275,10 +288,60 @@ ${exports}
         <p>This is auto-generated content!</p>
       </${componentName}`;
     } else {
-      // Generic fallback - try to use common prop patterns
-      return ` title="${task.title}">
-        <div>Sample content for ${task.title}</div>
-      </${componentName}`;
+      // Generic fallback - just use component as self-closing tag
+      return ' ';
+    }
+  }
+
+  // Analyze component content to determine what props it expects
+  static analyzeComponentProps(componentContent) {
+    try {
+      // Look for interface definitions
+      const interfaceMatch = componentContent.match(/interface\s+\w+Props\s*\{([^}]+)\}/);
+      if (interfaceMatch) {
+        const propsDefinition = interfaceMatch[1];
+        
+        // Parse individual props
+        const propLines = propsDefinition.split('\n').map(line => line.trim()).filter(line => line);
+        const props = {};
+        
+        propLines.forEach(line => {
+          // Match patterns like: label: string; or onClick?: () => void;
+          const propMatch = line.match(/(\w+)\??:\s*([^;]+)/);
+          if (propMatch) {
+            const [, propName, propType] = propMatch;
+            
+            if (propType.includes('string')) {
+              props[propName] = propName === 'label' ? 'Sample Button' : 'Sample Value';
+            } else if (propType.includes('number')) {
+              props[propName] = 1;
+            } else if (propType.includes('boolean')) {
+              props[propName] = true;
+            } else if (propType.includes('() => void')) {
+              props[propName] = '() => alert("Clicked!")';
+            }
+          }
+        });
+        
+        // Generate JSX props
+        if (Object.keys(props).length > 0) {
+          const propStrings = Object.entries(props).map(([key, value]) => {
+            if (typeof value === 'string' && !value.startsWith('()')) {
+              return `${key}="${value}"`;
+            } else {
+              return `${key}={${value}}`;
+            }
+          });
+          return ` ${propStrings.join(' ')}`;
+        }
+      }
+      
+      // If no interface found or no props, return empty (self-closing tag)
+      return ' ';
+      
+    } catch (error) {
+      console.error('Error analyzing component props:', error);
+      return ' ';
     }
   }
 
@@ -342,4 +405,4 @@ ${exports}
       };
     }
   }
-} 
+}
