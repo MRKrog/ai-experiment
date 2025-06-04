@@ -8,7 +8,12 @@ on:
   push:
     paths:
       - 'content/**'
-      - 'ai-experiment-site/**'
+      - 'ai-experiment-site/src/**'
+      - 'ai-experiment-site/public/**'
+      - 'ai-experiment-site/package*.json'
+      - 'ai-experiment-site/vite.config.js'
+      - 'ai-experiment-site/tailwind.config.js'
+      - '!ai-experiment-site/src/components/generated/**'  # Exclude auto-generated components
     branches: [ main ]
   
   # Deploy when triggered by content generation

@@ -45,7 +45,7 @@ export class GitHubApiService {
         owner,
         repo,
         path,
-        message: `Auto-deploy component: ${filename}`,
+        message: `[skip ci] Auto-deploy component: ${filename}`,
         content: Buffer.from(content).toString('base64'),
         sha // Include SHA if updating existing file
       });
@@ -100,7 +100,7 @@ ${exports}
         owner,
         repo,
         path,
-        message: `Auto-update exports index (${componentFiles.length} components)`,
+        message: `[skip ci] Auto-update exports index (${componentFiles.length} components)`,
         content: Buffer.from(indexContent).toString('base64'),
         sha
       });
@@ -241,7 +241,7 @@ ${exports}
         owner,
         repo,
         path,
-        message: `Auto-inject component: ${task.title} (${componentFileName})`,
+        message: `[skip ci] Auto-inject component: ${task.title} (${componentFileName})`,
         content: Buffer.from(updatedContent).toString('base64'),
         sha: currentFile.data.sha
       });
