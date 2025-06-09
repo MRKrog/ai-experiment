@@ -160,17 +160,28 @@ export const TasksForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
               {task.category === 'component_creation' ? 'Component Type' : 'Enhancement Category'}
             </FormLabel>
             <div className="grid grid-cols-4 gap-3">
-              {Object.entries(CONTENT_SCENARIOS).map(([key, category]) => (
-                <Button
-                  key={key}
-                  type="button"
-                  variant={task.category === key ? 'primary' : 'outline'}
-                  onClick={() => setTask({ ...task, category: key, scenario: '' })}
-                  className={task.category === key ? 'bg-blue-600 font-semibold shadow-[0_0_15px_-3px_rgba(59,130,246,0.9)]' : ''}
-                >
-                  {category.title}
-                </Button>
-              ))}
+              {Object.entries(CONTENT_SCENARIOS).map(([key, category]) => {
+                const isDisabled = key !== 'component_creation'; // Only allow Create Component
+                return (
+                  <Button
+                    key={key}
+                    type="button"
+                    variant={task.category === key ? 'primary' : 'outline'}
+                    onClick={() => {
+                      if (!isDisabled) {
+                        setTask({ ...task, category: key, scenario: '' });
+                      }
+                    }}
+                    disabled={isDisabled}
+                    className={`
+                      ${task.category === key ? 'bg-blue-600 font-semibold shadow-[0_0_15px_-3px_rgba(59,130,246,0.9)]' : ''}
+                      ${isDisabled ? 'opacity-50 cursor-not-allowed hover:bg-gray-700' : ''}
+                    `}
+                  >
+                    {category.title}
+                  </Button>
+                );
+              })}
             </div>
           </FormGroup>
 
