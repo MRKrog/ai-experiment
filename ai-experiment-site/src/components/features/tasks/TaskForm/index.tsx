@@ -192,21 +192,38 @@ export const TasksForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
                 {task.category === 'component_creation' ? 'Component Style' : 'Specific Scenario'}
               </FormLabel>
               <div className="grid grid-cols-1 gap-2">
-                {CONTENT_SCENARIOS[task.category].options.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={`px-4 py-3 rounded-lg text-left transition-all
-                      ${task.scenario === option.value
-                        ? 'bg-blue-900/50 text-blue-200 ring-2 ring-blue-500'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
-                    onClick={() => setTask({ ...task, scenario: option.value })}
-                  >
-                    <div className="font-medium text-sm">{option.label}</div>
-                    <div className="text-sm opacity-70 mt-1">{option.description}</div>
-                  </button>
-                ))}
+                {CONTENT_SCENARIOS[task.category].options.map((option) => {
+                  const isOptionDisabled = task.category === 'component_creation' && 
+                    (option.value === 'data_component' || option.value === 'form_component');
+                  
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      disabled={isOptionDisabled}
+                      className={`px-4 py-3 rounded-lg text-left transition-all
+                        ${task.scenario === option.value
+                          ? 'bg-blue-900/50 text-blue-200 ring-2 ring-blue-500'
+                          : isOptionDisabled
+                            ? 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-50'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                      onClick={() => {
+                        if (!isOptionDisabled) {
+                          setTask({ ...task, scenario: option.value });
+                        }
+                      }}
+                    >
+                      <div className="font-medium text-sm">
+                        {option.label}
+                        {isOptionDisabled && (
+                          <span className="ml-2 text-xs opacity-60">(Coming Soon)</span>
+                        )}
+                      </div>
+                      <div className="text-sm opacity-70 mt-1">{option.description}</div>
+                    </button>
+                  );
+                })}
               </div>
             </FormGroup>
           )}
