@@ -103,6 +103,26 @@ const CONTENT_SCENARIOS: ContentScenarios = {
   }
 };
 
+// Auto-generation data
+const COMPONENT_NAME_SUGGESTIONS = [
+  'SmartModal', 'FlexibleDropdown', 'AnimatedCarousel', 'ResponsiveSlider', 
+  'InteractiveToggle', 'DynamicAccordion', 'ModernTabs', 'CustomTooltip',
+  'AdvancedSelect', 'FluidNavigation', 'ExpandableCard', 'AdaptiveMenu',
+  'SmoothSlider', 'QuickActions', 'LivePreview', 'SmartSearch',
+  'FlexTabs', 'ResponsiveGrid', 'InteractiveChart', 'ModernDrawer'
+];
+
+const ADDITIONAL_NOTES_SUGGESTIONS = [
+  'Make it fully responsive with mobile-first design and smooth animations',
+  'Include dark mode support and accessibility features (ARIA labels, keyboard navigation)',
+  'Add hover effects, transitions, and modern glassmorphism styling',
+  'Ensure TypeScript support with proper prop validation and error handling',
+  'Include loading states, empty states, and customizable themes',
+  'Add support for custom icons, multiple variants, and flexible sizing options',
+  'Implement modern UI patterns with clean, minimalist design and subtle shadows',
+  'Include auto-complete functionality, search capabilities, and smooth micro-interactions'
+];
+
 export const TasksForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
   const [task, setTask] = useState<TaskFormState>({
     category: '',
@@ -111,6 +131,17 @@ export const TasksForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
     type: 'code_generation',
     additionalNotes: ''
   });
+
+  // Auto-generation functions
+  const generateRandomComponentName = () => {
+    const randomName = COMPONENT_NAME_SUGGESTIONS[Math.floor(Math.random() * COMPONENT_NAME_SUGGESTIONS.length)];
+    setTask({ ...task, component: randomName });
+  };
+
+  const generateRandomNotes = () => {
+    const randomNote = ADDITIONAL_NOTES_SUGGESTIONS[Math.floor(Math.random() * ADDITIONAL_NOTES_SUGGESTIONS.length)];
+    setTask({ ...task, additionalNotes: randomNote });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -236,15 +267,26 @@ export const TasksForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
                   ? 'New Component Name'
                   : 'Target Component'}
               </FormLabel>
-              <FormInput
-                type="text"
-                placeholder={task.category === 'component_creation'
-                  ? "Enter the new component name (e.g., 'MultiSelect', 'DataTable')"
-                  : "Enter the component to modify (e.g., 'Navigation Menu', 'Card Component')"}
-                value={task.component}
-                onChange={(e) => setTask({ ...task, component: e.target.value })}
-                required
-              />
+              <div className="relative">
+                <FormInput
+                  type="text"
+                  placeholder={task.category === 'component_creation'
+                    ? "Enter the new component name (e.g., 'MultiSelect', 'DataTable')"
+                    : "Enter the component to modify (e.g., 'Navigation Menu', 'Card Component')"}
+                  value={task.component}
+                  onChange={(e) => setTask({ ...task, component: e.target.value })}
+                  required
+                  className="pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={generateRandomComponentName}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-gray-700/80 hover:bg-purple-600/90 border border-gray-600 hover:border-purple-400 text-gray-300 hover:text-white flex items-center justify-center transition-all duration-200 hover:scale-105 backdrop-blur-sm"
+                  title="Auto-generate component name"
+                >
+                  <span className="text-sm">✨</span>
+                </button>
+              </div>
             </FormGroup>
           )}
 
@@ -252,12 +294,23 @@ export const TasksForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
           {task.scenario && (
             <FormGroup>
               <FormLabel>Additional Notes (Optional)</FormLabel>
-              <FormTextarea
-                rows={1}
-                placeholder="Add any specific requirements or notes..."
-                value={task.additionalNotes}
-                onChange={(e) => setTask({ ...task, additionalNotes: e.target.value })}
-              />
+              <div className="relative">
+                <FormTextarea
+                  rows={3}
+                  placeholder="Add any specific requirements or notes..."
+                  value={task.additionalNotes}
+                  onChange={(e) => setTask({ ...task, additionalNotes: e.target.value })}
+                  className="pr-12 resize-none"
+                />
+                <button
+                  type="button"
+                  onClick={generateRandomNotes}
+                  className="absolute right-2 top-2 w-8 h-8 rounded-lg bg-gray-700/80 hover:bg-green-600/90 border border-gray-600 hover:border-green-400 text-gray-300 hover:text-white flex items-center justify-center transition-all duration-200 hover:scale-105 backdrop-blur-sm"
+                  title="Auto-generate notes"
+                >
+                  <span className="text-sm">✨</span>
+                </button>
+              </div>
             </FormGroup>
           )}
 
