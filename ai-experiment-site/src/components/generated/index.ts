@@ -2,8 +2,6 @@
 // Generated on: 2025-06-12T17:32:16.982Z
 // Total components: 2
 
-export { default as CreateNewHeroImageComponent } from './CreateNewHeroImageComponent';
-export { default as CreateNewSmartSearchComponent } from './CreateNewSmartSearchComponent';
 
 // Usage example:
 // import { HeaderComponent, ButtonComponent } from './components/generated';
