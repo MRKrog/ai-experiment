@@ -4,6 +4,7 @@ import { ContentDialog } from '../../content/ContentDialog';
 import { Tooltip } from '../../../common/Tooltip';
 import type { Task } from '../../../../types/task.types';
 import { TrashIcon, RocketLaunchIcon } from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface TasksTableProps {
   tasks?: Task[];
@@ -15,6 +16,7 @@ interface TasksTableProps {
 
 const TasksTable: React.FC<TasksTableProps> = ({ tasks = [], isLoading = false, onDelete, onStartProcess, onDeploy }) => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [hoveredTaskId, setHoveredTaskId] = useState<string | null>(null);
 
   const getStatusBadgeClass = (status: string) => {
     const classes = {
@@ -85,10 +87,16 @@ const TasksTable: React.FC<TasksTableProps> = ({ tasks = [], isLoading = false, 
 
   if (isLoading) {
     return (
-      <div className="animate-pulse">
-        <div className="h-12 bg-gray-700/30 rounded-t-lg mb-4"></div>
+      <div className="space-y-4">
+        <div className="h-12 bg-gray-700/30 rounded-lg animate-pulse"></div>
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-16 bg-gray-700/30 mb-2"></div>
+          <motion.div
+            key={i}
+            initial={{ opacity: 0.5 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, repeat: Infinity, repeatType: "reverse" }}
+            className="h-16 bg-gray-700/30 rounded-lg"
+          />
         ))}
       </div>
     );
@@ -96,18 +104,23 @@ const TasksTable: React.FC<TasksTableProps> = ({ tasks = [], isLoading = false, 
 
   if (!tasks.length) {
     return (
-      <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 text-center">
-        <p className="text-gray-400">No tasks found</p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center"
+      >
+        <p className="text-gray-400 text-lg">No tasks found</p>
+        <p className="text-gray-500 text-sm mt-2">Create your first task to get started</p>
+      </motion.div>
     );
   }
 
   return (
     <>
-      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden shadow-xl">
         <div className="divide-y divide-gray-700">
           {/* Header */}
-          <div className="bg-gray-900/50 grid grid-cols-[minmax(0,_2fr)_minmax(0,_1fr)_minmax(0,_1fr)_minmax(0,_1fr)_120px] gap-6 px-6 py-3 text-xs text-gray-400 tracking-wider">
+          <div className="bg-gray-900/50 grid grid-cols-[minmax(0,_2fr)_minmax(0,_1fr)_minmax(0,_1fr)_minmax(0,_1fr)_120px] gap-6 px-6 py-4 text-xs text-gray-400 tracking-wider font-medium">
             <div className="truncate">Title</div>
             <div className="truncate">Type</div>
             <div className="truncate">Status</div>
@@ -117,99 +130,146 @@ const TasksTable: React.FC<TasksTableProps> = ({ tasks = [], isLoading = false, 
 
           {/* Body */}
           <div className="divide-y divide-gray-700">
-            {tasks.map((task) => (
-              <div
-                key={task._id}
-                onClick={() => handleRowClick(task)}
-                className="grid grid-cols-[minmax(0,_2fr)_minmax(0,_1fr)_minmax(0,_1fr)_minmax(0,_1fr)_120px] gap-6 px-6 py-4 hover:bg-gray-700/50 cursor-pointer transition-colors items-center"
-              >
-                <TruncatedTitle title={task.title} />
-                <div className="flex items-center">
-                  <span className={getTypeBadgeClass(task.type)}>
-                    {task.type.replace(/_/g, ' ')}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <span className={getStatusBadgeClass(task.status)}>
-                    {task.status}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-400">
-                  {formatDate(task.createdAt)}
-                </div>
-                <div className="flex items-center justify-end gap-2">
-                  {/* Deploy Button - Only show for staged tasks */}
-                  {task.status === 'staged' && onDeploy && (
-                    <Tooltip content="Deploy component to live website">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeploy();
-                        }}
-                        className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/30 rounded transition-colors"
-                      >
-                        <RocketLaunchIcon className="w-4 h-4" />
-                      </button>
-                    </Tooltip>
-                  )}
+            <AnimatePresence>
+              {tasks.map((task) => (
+                <motion.div
+                  key={task._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.2 }}
+                  onHoverStart={() => setHoveredTaskId(task._id)}
+                  onHoverEnd={() => setHoveredTaskId(null)}
+                  onClick={() => handleRowClick(task)}
+                  className={`
+                    grid grid-cols-[minmax(0,_2fr)_minmax(0,_1fr)_minmax(0,_1fr)_minmax(0,_1fr)_120px] 
+                    gap-6 px-6 py-4 cursor-pointer transition-all duration-200
+                    ${hoveredTaskId === task._id ? 'bg-gray-700/50 scale-[1.01]' : 'hover:bg-gray-700/30'}
+                  `}
+                >
+                  <motion.div
+                    whileHover={{ x: 4 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
+                    <TruncatedTitle title={task.title} />
+                  </motion.div>
                   
-                  {/* Live Indicator - Show for live tasks */}
-                  {(task.status === 'live' || task.status === 'deployed') && (
-                    <Tooltip content="Live on website">
-                      <div className="p-1.5 text-emerald-400 rounded">
-                        <div className="flex items-center gap-1">
-                          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                          <span className="text-xs font-medium">LIVE</span>
-                        </div>
-                      </div>
-                    </Tooltip>
-                  )}
+                  <div className="flex items-center">
+                    <motion.span
+                      whileHover={{ scale: 1.05 }}
+                      className={getTypeBadgeClass(task.type)}
+                    >
+                      {task.type.replace(/_/g, ' ')}
+                    </motion.span>
+                  </div>
                   
-                  {/* Deploying Indicator - Show for deploying tasks */}
-                  {task.status === 'deploying' && (
-                    <Tooltip content="Deploying to website">
-                      <div className="p-1.5 text-purple-400 rounded">
-                        <div className="flex items-center gap-1">
-                          <div className="w-2 h-2 bg-purple-400 rounded-full animate-spin"></div>
-                          <span className="text-xs font-medium">DEPLOYING</span>
-                        </div>
-                      </div>
-                    </Tooltip>
-                  )}
+                  <div className="flex items-center">
+                    <motion.span
+                      initial={false}
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 0.3 }}
+                      className={getStatusBadgeClass(task.status)}
+                    >
+                      {task.status}
+                    </motion.span>
+                  </div>
                   
-                  {/* Delete Button */}
-                  {onDelete && (
-                    <Tooltip content="Delete task">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDelete(task._id);
-                        }}
-                        className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded transition-colors"
-                        aria-label="Delete task"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </Tooltip>
-                  )}
-                </div>
-              </div>
-            ))}
+                  <div className="text-xs text-gray-400">
+                    {formatDate(task.createdAt)}
+                  </div>
+                  
+                  <div className="flex items-center justify-end gap-2">
+                    {/* Deploy Button */}
+                    {task.status === 'staged' && onDeploy && (
+                      <Tooltip content="Deploy component to live website">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeploy();
+                          }}
+                          className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/30 rounded-full transition-colors"
+                        >
+                          <RocketLaunchIcon className="w-4 h-4" />
+                        </motion.button>
+                      </Tooltip>
+                    )}
+                    
+                    {/* Live Indicator */}
+                    {(task.status === 'live' || task.status === 'deployed') && (
+                      <Tooltip content="Live on website">
+                        <motion.div
+                          initial={{ scale: 0.8 }}
+                          animate={{ scale: 1 }}
+                          className="p-1.5 text-emerald-400 rounded"
+                        >
+                          <div className="flex items-center gap-1">
+                            <motion.div
+                              animate={{ scale: [1, 1.2, 1] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                              className="w-2 h-2 bg-emerald-400 rounded-full"
+                            />
+                            <span className="text-xs font-medium">LIVE</span>
+                          </div>
+                        </motion.div>
+                      </Tooltip>
+                    )}
+                    
+                    {/* Deploying Indicator */}
+                    {task.status === 'deploying' && (
+                      <Tooltip content="Deploying to website">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                          className="p-1.5 text-purple-400 rounded"
+                        >
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-purple-400 rounded-full" />
+                            <span className="text-xs font-medium">DEPLOYING</span>
+                          </div>
+                        </motion.div>
+                      </Tooltip>
+                    )}
+                    
+                    {/* Delete Button */}
+                    {onDelete && (
+                      <Tooltip content="Delete task">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(task._id);
+                          }}
+                          className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-full transition-colors"
+                          aria-label="Delete task"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </motion.button>
+                      </Tooltip>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
       </div>
 
-      {selectedTaskId && (
-        <ContentDialog
-          taskId={selectedTaskId}
-          isOpen={true}
-          onClose={() => setSelectedTaskId(null)}
-          onStartProcess={(task) => {
-            onStartProcess?.(task);
-            setSelectedTaskId(null);
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {selectedTaskId && (
+          <ContentDialog
+            taskId={selectedTaskId}
+            isOpen={true}
+            onClose={() => setSelectedTaskId(null)}
+            onStartProcess={(task) => {
+              onStartProcess?.(task);
+              setSelectedTaskId(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 };
