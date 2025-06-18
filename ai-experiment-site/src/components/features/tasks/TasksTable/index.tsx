@@ -147,31 +147,20 @@ const TasksTable: React.FC<TasksTableProps> = ({ tasks = [], isLoading = false, 
                     ${hoveredTaskId === task._id ? 'bg-gray-700/50 scale-[1.01]' : 'hover:bg-gray-700/30'}
                   `}
                 >
-                  <motion.div
-                    whileHover={{ x: 4 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  >
+                  <div>
                     <TruncatedTitle title={task.title} />
-                  </motion.div>
-                  
-                  <div className="flex items-center">
-                    <motion.span
-                      whileHover={{ scale: 1.05 }}
-                      className={getTypeBadgeClass(task.type)}
-                    >
-                      {task.type.replace(/_/g, ' ')}
-                    </motion.span>
                   </div>
                   
                   <div className="flex items-center">
-                    <motion.span
-                      initial={false}
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 0.3 }}
-                      className={getStatusBadgeClass(task.status)}
-                    >
+                    <span className={getTypeBadgeClass(task.type)}>
+                      {task.type.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <span className={getStatusBadgeClass(task.status)}>
                       {task.status}
-                    </motion.span>
+                    </span>
                   </div>
                   
                   <div className="text-xs text-gray-400">
@@ -199,11 +188,7 @@ const TasksTable: React.FC<TasksTableProps> = ({ tasks = [], isLoading = false, 
                     {/* Live Indicator */}
                     {(task.status === 'live' || task.status === 'deployed') && (
                       <Tooltip content="Live on website">
-                        <motion.div
-                          initial={{ scale: 0.8 }}
-                          animate={{ scale: 1 }}
-                          className="p-1.5 text-emerald-400 rounded"
-                        >
+                        <div className="p-1.5 text-emerald-400 rounded">
                           <div className="flex items-center gap-1">
                             <motion.div
                               animate={{ scale: [1, 1.2, 1] }}
@@ -212,23 +197,23 @@ const TasksTable: React.FC<TasksTableProps> = ({ tasks = [], isLoading = false, 
                             />
                             <span className="text-xs font-medium">LIVE</span>
                           </div>
-                        </motion.div>
+                        </div>
                       </Tooltip>
                     )}
                     
                     {/* Deploying Indicator */}
                     {task.status === 'deploying' && (
                       <Tooltip content="Deploying to website">
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                          className="p-1.5 text-purple-400 rounded"
-                        >
+                        <div className="p-1.5 text-purple-400 rounded">
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-purple-400 rounded-full" />
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                              className="w-2 h-2 bg-purple-400 rounded-full"
+                            />
                             <span className="text-xs font-medium">DEPLOYING</span>
                           </div>
-                        </motion.div>
+                        </div>
                       </Tooltip>
                     )}
                     
